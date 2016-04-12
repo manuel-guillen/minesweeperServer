@@ -13,23 +13,44 @@ import minesweeper.Board;
  * Multiplayer Minesweeper server.
  */
 public class MinesweeperServer {
+    
+    private static final int DEFAULT_PORT = 4444;   // Default server port.
+    private static final int MAXIMUM_PORT = 65535;  // Maximum port number as defined by ServerSocket.
+    private static final int DEFAULT_SIZE = 10;     // Default square board size.
+    
+    
+    private final ServerSocket serverSocket;        // Socket for receiving incoming connections.
+    private final boolean debug;                    // True if the server should *not* disconnect a client after a BOOM message.
+    private final Board board;                      // Board of Minesweeper game being played on server.
+    
+    /*
+     *  Abstraction Function
+     *  ====================
+     *  Represents a server for a multiplayer Minesweeper game, with game board represented by board, and
+     *  with a server socket listening for incoming server connection requests.
+     *  (debug represents whether or not server is in debug setting - see field comment)
+     *  
+     */
+    
+    /*
+     *  Rep Invariant
+     *  =============
+     *  TODO
+     */
+    
+    /*
+     *  Safety from Rep Exposure
+     *  ========================
+     *  All field references are final
+     *  TODO
+     */
+    
+    /*
+     *  System thread safety argument
+     *  =============================
+     *  TODO Problem 5
+     */
 
-    // System thread safety argument
-    //   TODO Problem 5
-
-    /** Default server port. */
-    private static final int DEFAULT_PORT = 4444;
-    /** Maximum port number as defined by ServerSocket. */
-    private static final int MAXIMUM_PORT = 65535;
-    /** Default square board size. */
-    private static final int DEFAULT_SIZE = 10;
-
-    /** Socket for receiving incoming connections. */
-    private final ServerSocket serverSocket;
-    /** True if the server should *not* disconnect a client after a BOOM message. */
-    private final boolean debug;
-
-    // TODO: Abstraction function, rep invariant, rep exposure
 
     /**
      * Make a MinesweeperServer that listens for connections on port.
@@ -41,6 +62,7 @@ public class MinesweeperServer {
     public MinesweeperServer(int port, boolean debug) throws IOException {
         serverSocket = new ServerSocket(port);
         this.debug = debug;
+        this.board = null;
     }
 
     /**
@@ -52,85 +74,115 @@ public class MinesweeperServer {
      */
     public void serve() throws IOException {
         while (true) {
-            // block until a client connects
             Socket socket = serverSocket.accept();
-
-            // handle the client
-            try {
-                handleConnection(socket);
-            } catch (IOException ioe) {
-                ioe.printStackTrace(); // but don't terminate serve()
-            } finally {
-                socket.close();
-            }
+            new Thread(new MinesweeperClientHandler(socket)).start();
         }
     }
+    
+    // ======================================================PRIVATE INNER CLASS======================================================
+        
+    private class MinesweeperClientHandler implements Runnable {
 
-    /**
-     * Handle a single client connection. Returns when client disconnects.
-     * 
-     * @param socket socket where the client is connected
-     * @throws IOException if the connection encounters an error or terminates unexpectedly
-     */
-    private void handleConnection(Socket socket) throws IOException {
-        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-
-        try {
-            for (String line = in.readLine(); line != null; line = in.readLine()) {
-                String output = handleRequest(line);
-                if (output != null) {
-                    // TODO: Consider improving spec of handleRequest to avoid use of null
-                    out.println(output);
+        private final Socket socket;
+        
+        public MinesweeperClientHandler(Socket socket) {
+            this.socket = socket;
+        }
+        
+        /**
+         * Handle the single client connection. Terminate when client disconnects.
+         * 
+         * @param socket socket where the client is connected
+         */
+        @Override
+        public void run() {
+            try (
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            ){
+                for (String line = in.readLine(); line != null; line = in.readLine()) {
+                    String output = handleRequest(line);
+                    if (output != null) {
+                        // TODO: Consider improving spec to avoid use of null
+                        out.println(output);
+                    }
+                }
+                
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            
+        }
+        
+        /**
+         * Handler for client input, performing requested operations on board and returning an output message.
+         * 
+         * @param input message from client
+         * @return message to client, or null if none
+         */
+        private String handleRequest(String input) {
+            String regex = "(look)|(help)|(bye)|"
+                         + "(dig -?\\d+ -?\\d+)|(flag -?\\d+ -?\\d+)|(deflag -?\\d+ -?\\d+)";
+            if ( ! input.matches(regex)) {
+                // invalid input
+                // TODO Problem 5
+            }
+            String[] tokens = input.split(" ");
+            if (tokens[0].equals("look")) {
+                // 'look' request
+                // TODO Problem 5
+            } else if (tokens[0].equals("help")) {
+                // 'help' request
+                // TODO Problem 5
+            } else if (tokens[0].equals("bye")) {
+                // 'bye' request
+                // TODO Problem 5
+            } else {
+                int x = Integer.parseInt(tokens[1]);
+                int y = Integer.parseInt(tokens[2]);
+                if (tokens[0].equals("dig")) {
+                    // 'dig x y' request
+                    // TODO Problem 5
+                } else if (tokens[0].equals("flag")) {
+                    // 'flag x y' request
+                    // TODO Problem 5
+                } else if (tokens[0].equals("deflag")) {
+                    // 'deflag x y' request
+                    // TODO Problem 5
                 }
             }
-        } finally {
-            out.close();
-            in.close();
+            // TODO: Should never get here, make sure to return in each of the cases above
+            throw new UnsupportedOperationException();
         }
+        
     }
 
+    // ========================================================STATIC METHODS=========================================================
+    
     /**
-     * Handler for client input, performing requested operations and returning an output message.
+     * Start a MinesweeperServer running on the specified port, with either a random new board or a
+     * board loaded from a file.
      * 
-     * @param input message from client
-     * @return message to client, or null if none
+     * @param debug The server will disconnect a client after a BOOM message if and only if debug is false.
+     * @param file If file.isPresent(), start with a board loaded from the specified file,
+     *             according to the input file format defined in the documentation for main(..).
+     * @param sizeX If (!file.isPresent()), start with a random board with width sizeX
+     *              (and require sizeX > 0).
+     * @param sizeY If (!file.isPresent()), start with a random board with height sizeY
+     *              (and require sizeY > 0).
+     * @param port The network port on which the server should listen, requires 0 <= port <= 65535.
+     * @throws IOException if a network error occurs
      */
-    private String handleRequest(String input) {
-        String regex = "(look)|(help)|(bye)|"
-                     + "(dig -?\\d+ -?\\d+)|(flag -?\\d+ -?\\d+)|(deflag -?\\d+ -?\\d+)";
-        if ( ! input.matches(regex)) {
-            // invalid input
-            // TODO Problem 5
-        }
-        String[] tokens = input.split(" ");
-        if (tokens[0].equals("look")) {
-            // 'look' request
-            // TODO Problem 5
-        } else if (tokens[0].equals("help")) {
-            // 'help' request
-            // TODO Problem 5
-        } else if (tokens[0].equals("bye")) {
-            // 'bye' request
-            // TODO Problem 5
-        } else {
-            int x = Integer.parseInt(tokens[1]);
-            int y = Integer.parseInt(tokens[2]);
-            if (tokens[0].equals("dig")) {
-                // 'dig x y' request
-                // TODO Problem 5
-            } else if (tokens[0].equals("flag")) {
-                // 'flag x y' request
-                // TODO Problem 5
-            } else if (tokens[0].equals("deflag")) {
-                // 'deflag x y' request
-                // TODO Problem 5
-            }
-        }
-        // TODO: Should never get here, make sure to return in each of the cases above
-        throw new UnsupportedOperationException();
+    public static void runMinesweeperServer(boolean debug, Optional<File> file, int sizeX, int sizeY, int port) throws IOException {
+        
+        // TODO: Continue implementation here in problem 4
+        
+        MinesweeperServer server = new MinesweeperServer(port, debug);
+        server.serve();
     }
 
+    // ==========================================================MAIN METHOD==========================================================
+    
     /**
      * Start a MinesweeperServer using the given arguments.
      * 
@@ -231,25 +283,4 @@ public class MinesweeperServer {
         }
     }
 
-    /**
-     * Start a MinesweeperServer running on the specified port, with either a random new board or a
-     * board loaded from a file.
-     * 
-     * @param debug The server will disconnect a client after a BOOM message if and only if debug is false.
-     * @param file If file.isPresent(), start with a board loaded from the specified file,
-     *             according to the input file format defined in the documentation for main(..).
-     * @param sizeX If (!file.isPresent()), start with a random board with width sizeX
-     *              (and require sizeX > 0).
-     * @param sizeY If (!file.isPresent()), start with a random board with height sizeY
-     *              (and require sizeY > 0).
-     * @param port The network port on which the server should listen, requires 0 <= port <= 65535.
-     * @throws IOException if a network error occurs
-     */
-    public static void runMinesweeperServer(boolean debug, Optional<File> file, int sizeX, int sizeY, int port) throws IOException {
-        
-        // TODO: Continue implementation here in problem 4
-        
-        MinesweeperServer server = new MinesweeperServer(port, debug);
-        server.serve();
-    }
 }
