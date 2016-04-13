@@ -72,7 +72,7 @@ public class Board {
      *  ========================
      *  All fields are private and have immutable references
      *  The fields width and height are immutable
-     *  TODO Finish.
+     *  No references to internal field objects are leaked, all return types are primitive
      */
     
     /*
@@ -203,7 +203,7 @@ public class Board {
      * @param y the y-coordinate of cell being checked
      * @return true if the cell (x,y) of this Minesweeper board is in the untouched state.
      */
-    public boolean isUntouched(int x, int y) {
+    public synchronized boolean isUntouched(int x, int y) {
         return cellStates[x][y].equals(CellState.UNTOUCHED);
     }
     
@@ -215,7 +215,7 @@ public class Board {
      * @param y the y-coordinate of cell being checked
      * @return true if the cell (x,y) of this Minesweeper board is in the flagged state.
      */
-    public boolean isFlagged(int x, int y) {
+    public synchronized boolean isFlagged(int x, int y) {
         return cellStates[x][y].equals(CellState.FLAGGED);
     }
     
@@ -227,7 +227,7 @@ public class Board {
      * @param y the y-coordinate of cell being checked
      * @return true if the cell (x,y) of this Minesweeper board is in the dug (opened) state.
      */
-    public boolean hasBeenDug(int x, int y) {
+    public synchronized boolean hasBeenDug(int x, int y) {
         return cellStates[x][y].equals(CellState.DUG);
     }
     
@@ -239,7 +239,7 @@ public class Board {
      * @param y the y-coordinate of cell being checked
      * @return true if there is a mine in cell (x,y) of this Minesweeper board. Returns false, otherwise.
      */
-    public boolean containsMine(int x, int y) {
+    public synchronized boolean containsMine(int x, int y) {
         return mines[x][y];
     }
     
@@ -251,7 +251,7 @@ public class Board {
      * @param y the y-coordinate of cell being checked
      * @return true the number of mines surrounding the cell (x,y) on this Minesweeper board.
      */
-    public int getMineCount(int x, int y) {
+    public synchronized int getMineCount(int x, int y) {
         return mineCounts[x][y];
     }
 
@@ -269,7 +269,7 @@ public class Board {
      * @param y the y-coordinate of cell to be opened/dug
      * @return true if this cell was untouched before and had a mine at this location. Otherwise, return false.
      */
-    public boolean dig(int x, int y) {
+    public synchronized boolean dig(int x, int y) {
         if (isUntouched(x,y)) {
             cellStates[x][y] = CellState.DUG;
             if (containsMine(x,y)) {
@@ -292,7 +292,7 @@ public class Board {
      * @param x the x-coordinate of the cell to be flagged
      * @param y the y-coordinate of the cell to be flagged
      */
-    public void flag(int x, int y) {
+    public synchronized void flag(int x, int y) {
         if (isUntouched(x,y))
             cellStates[x][y] = CellState.FLAGGED;
         checkRep();
@@ -307,7 +307,7 @@ public class Board {
      * @param x the x-coordinate of the cell to be deflagged
      * @param y the y-coordinate of the cell to be deflagged
      */
-    public void deflag(int x, int y) {
+    public synchronized void deflag(int x, int y) {
         if (isFlagged(x,y))
             cellStates[x][y] = CellState.UNTOUCHED;
         checkRep();
@@ -316,18 +316,26 @@ public class Board {
     // ---------------------------------------------- Other Methods ------------------------------------------------
     
     @Override
-    public String toString() {
+    public synchronized String toString() {
         StringWriter output = new StringWriter();
         PrintWriter out = new PrintWriter(output);
         
         for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                if (isUntouched(x,y))       out.print("-");
-                else if (isFlagged(x,y))    out.print("F");
+            for (int x = 0; x < width-1; x++) {
+                if (isUntouched(x,y))       out.print("- ");
+                else if (isFlagged(x,y))    out.print("F ");
                 else {
                     int c = getMineCount(x,y);
                     out.print(c == 0 ? " " : c);
+                    out.print(" ");
                 }
+            }
+            
+            if (isUntouched(width-1,y))       out.print("-");
+            else if (isFlagged(width-1,y))    out.print("F");
+            else {
+                int c = getMineCount(width,y);
+                out.print(c == 0 ? " " : c);
             }
             
             out.println();
@@ -337,7 +345,7 @@ public class Board {
         return output.toString().replaceAll("\\s+$","");
     }
     
-    public String toMineString() {
+    public synchronized String toMineString() {
         StringWriter output = new StringWriter();
         PrintWriter out = new PrintWriter(output);
         
@@ -422,4 +430,8 @@ public class Board {
         return arr;
     }
     
+//    public static void main(String[] args) {
+//        Board board = new Board(20,14);
+//        System.out.println(board);
+//    }
 }

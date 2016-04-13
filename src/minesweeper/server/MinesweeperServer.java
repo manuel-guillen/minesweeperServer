@@ -10,7 +10,7 @@ import java.util.*;
 import minesweeper.Board;
 
 /**
- * Multiplayer Minesweeper server.
+ * Represents a Multiplayer Minesweeper server.
  */
 public class MinesweeperServer {
     
@@ -35,20 +35,30 @@ public class MinesweeperServer {
     /*
      *  Rep Invariant
      *  =============
-     *  TODO
+     *  true
      */
     
     /*
      *  Safety from Rep Exposure
      *  ========================
-     *  All field references are final
-     *  TODO
+     *  All field references are private and final
+     *  No observer methods, all field references are kept within class, no references are leaked
      */
     
     /*
      *  System thread safety argument
      *  =============================
-     *  TODO Problem 5
+     *  External threads:
+     *  Synchronization is used to ensure this MinesweeperServer object is not called to serve()
+     *  while already serving. Since this is the only object method, this prevents threads with access
+     *  to this MinesweeperServer object to interfere with each other.
+     *  
+     *  Internal threads:
+     *  Threads are initiated by this MinesweeperServer. Thread safety is implemented as follows:
+     *      - serverSocket      Confinement         Threads initiated here do not have access to serverSocket
+     *      - debug             Immutability        Threads cannot modify the immutable value of debug
+     *      - board             Synchronization     Threads can only mutate board once at a time, since board is
+     *                                              a thread-safe data type (see Board spec and thread-safety argument)
      */
 
 
@@ -59,10 +69,10 @@ public class MinesweeperServer {
      * @param debug debug mode flag
      * @throws IOException if an error occurs opening the server socket
      */
-    public MinesweeperServer(int port, boolean debug) throws IOException {
+    public MinesweeperServer(int port, boolean debug, Board board) throws IOException {
         serverSocket = new ServerSocket(port);
         this.debug = debug;
-        this.board = null;
+        this.board = board;
     }
 
     /**
@@ -72,89 +82,11 @@ public class MinesweeperServer {
      * @throws IOException if the main server socket is broken
      *                     (IOExceptions from individual clients do *not* terminate serve())
      */
-    public void serve() throws IOException {
+    public synchronized void serve() throws IOException {
         while (true) {
             Socket socket = serverSocket.accept();
-            new Thread(new MinesweeperClientHandler(socket)).start();
+            new Thread(new MinesweeperClientHandler(socket, debug, board)).start();
         }
-    }
-    
-    // ======================================================PRIVATE INNER CLASS======================================================
-        
-    private class MinesweeperClientHandler implements Runnable {
-
-        private final Socket socket;
-        
-        public MinesweeperClientHandler(Socket socket) {
-            this.socket = socket;
-        }
-        
-        /**
-         * Handle the single client connection. Terminate when client disconnects.
-         * 
-         * @param socket socket where the client is connected
-         */
-        @Override
-        public void run() {
-            try (
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            ){
-                for (String line = in.readLine(); line != null; line = in.readLine()) {
-                    String output = handleRequest(line);
-                    if (output != null) {
-                        // TODO: Consider improving spec to avoid use of null
-                        out.println(output);
-                    }
-                }
-                
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            
-        }
-        
-        /**
-         * Handler for client input, performing requested operations on board and returning an output message.
-         * 
-         * @param input message from client
-         * @return message to client, or null if none
-         */
-        private String handleRequest(String input) {
-            String regex = "(look)|(help)|(bye)|"
-                         + "(dig -?\\d+ -?\\d+)|(flag -?\\d+ -?\\d+)|(deflag -?\\d+ -?\\d+)";
-            if ( ! input.matches(regex)) {
-                // invalid input
-                // TODO Problem 5
-            }
-            String[] tokens = input.split(" ");
-            if (tokens[0].equals("look")) {
-                // 'look' request
-                // TODO Problem 5
-            } else if (tokens[0].equals("help")) {
-                // 'help' request
-                // TODO Problem 5
-            } else if (tokens[0].equals("bye")) {
-                // 'bye' request
-                // TODO Problem 5
-            } else {
-                int x = Integer.parseInt(tokens[1]);
-                int y = Integer.parseInt(tokens[2]);
-                if (tokens[0].equals("dig")) {
-                    // 'dig x y' request
-                    // TODO Problem 5
-                } else if (tokens[0].equals("flag")) {
-                    // 'flag x y' request
-                    // TODO Problem 5
-                } else if (tokens[0].equals("deflag")) {
-                    // 'deflag x y' request
-                    // TODO Problem 5
-                }
-            }
-            // TODO: Should never get here, make sure to return in each of the cases above
-            throw new UnsupportedOperationException();
-        }
-        
     }
 
     // ========================================================STATIC METHODS=========================================================
@@ -174,10 +106,8 @@ public class MinesweeperServer {
      * @throws IOException if a network error occurs
      */
     public static void runMinesweeperServer(boolean debug, Optional<File> file, int sizeX, int sizeY, int port) throws IOException {
-        
-        // TODO: Continue implementation here in problem 4
-        
-        MinesweeperServer server = new MinesweeperServer(port, debug);
+        MinesweeperServer server = new MinesweeperServer(port, debug,
+                                                file.isPresent() ? new Board(file.get()) : new Board(sizeX, sizeY));
         server.serve();
     }
 
