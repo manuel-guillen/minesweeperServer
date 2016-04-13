@@ -83,7 +83,8 @@ public class Board {
      *  =============================
      *  Threads are allowed to concurrently access this object, preserve the rep invariant, and
      *  maintain the validity of the specs because of the following thread-safety implementations:
-     *      - Immutability      getWidth() and getHeight() are methods that read immutable fields of this object
+     *      - Immutability      getWidth(), getHeight(), and isValidBoardCoordinate() are non-mutator methods 
+     *                          that only read immutable fields of this object
      *      
      *      - Synchronization   the other public methods are all synchronized methods, meaning multithreaded access
      *                          to this object is done atomically by threads (no simultaneous access to the object)
