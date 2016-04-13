@@ -15,7 +15,10 @@ import java.util.List;
 import java.util.Scanner;
 
 /**
- * Represents a Minesweeper game board.
+ * Represents a thread-safe Minesweeper game board. This Minesweeper game board can be accessed by multiple threads,
+ * to allow multiplayer use of the board. The Board data type is thread-safe by making its actions atomic. Any method
+ * calls to a Board object occur atomically in the face of multithreaded execution, so multiple threads cannot simultaneously
+ * be executing method calls on a Board object - one runs atomically before the other (before-after atomicity).
  */
 public class Board {
     
@@ -72,20 +75,33 @@ public class Board {
      *  ========================
      *  All fields are private and have immutable references
      *  The fields width and height are immutable
-     *  No references to internal field objects are leaked, all return types are primitive
+     *  No references to internal field objects are leaked, all return types are primitive, and so immutable.
      */
     
     /*
-     *  System thread safety argument
+     *  System Thread Safety Argument
      *  =============================
-     *  TODO Problem 5
+     *  Threads are allowed to concurrently access this object, preserve the rep invariant, and
+     *  maintain the validity of the specs because of the following thread-safety implementations:
+     *      - Immutability      getWidth() and getHeight() are methods that read immutable fields of this object
+     *      
+     *      - Synchronization   the other public methods are all synchronized methods, meaning multithreaded access
+     *                          to this object is done atomically by threads (no simultaneous access to the object)
+     *                          and so, these methods run atomically, to completion, before another thread can access
+     *                          this object
+     *                          
+     *  Private methods are not explicitly available to external threads (Note: There are no internal threads as this object
+     *  does not create new threads). However, these private methods are called from within public methods, which can be called
+     *  concurrently. Since these methods are called from within synchronized methods only, synchronization still provides
+     *  thread-safety, because the method call still has the lock to this object, while within the private method (furthermore, we
+     *  cannot have helper methods be synchronized if we want public synchronized methods to call to them during execution).
      */
     
     // ----------------------------------------------- Constructors -------------------------------------------------
     
     /**
      * Creates a Minesweeper board of dimensions width by height, with a third of
-     * its cells (to the nearest whole number) have mines.
+     * its cells (to the nearest whole number), chosen at random, have mines.
      * @param width a positive integer denoting the width of the Minesweeper board
      * @param height a positive integer denoting the height of the Minesweeper board
      */
@@ -108,7 +124,7 @@ public class Board {
         
         checkRep();
     }
-    
+       
     /**
      * Creates a Minesweeper board where the distribution and size of mines is taken from a file
      * following the Minesweeper Server File Format (see Specification & Protocol web page)
@@ -138,12 +154,12 @@ public class Board {
             checkRep();
             
         } catch (IOException e) {
-            throw new RuntimeException("Illegal file.");
+            throw new RuntimeException("File illegal format.");
         }
     }
     
     // ------------------------------------------------ Check Rep ---------------------------------------------------
-
+    
     /*
      *  Asserts the rep invariant.
      */
@@ -261,18 +277,23 @@ public class Board {
      * Performs a dig on cell (x,y) of this Minesweeper board, that is, the cell (x,y) is opened, and
      * returns true if the cell was untouched before and there was a mine at this cell. A dig on an untouched
      * cell changes it to the dug state. A dig on a flagged cell or dug cell does nothing. A dig on an untouched
-     * cell removes the mine after execution of this method, to allow the game to proceed.
+     * cell removes the mine after execution of this method, to allow the game to proceed. This all happens in the
+     * case where x,y are integers such that isValidBoardCoordinate(x,y) returns true.
      * 
-     * Requires that x,y be integers such that isValidBoardCoordinate(x,y) return true.
+     * In the case where isValidBoardCoordinate(x,y) returns false, the board remains unchanged and this method
+     * returns false.
      * 
      * @param x the x-coordinate of cell to be opened/dug
      * @param y the y-coordinate of cell to be opened/dug
      * @return true if this cell was untouched before and had a mine at this location. Otherwise, return false.
      */
     public synchronized boolean dig(int x, int y) {
-        if (isUntouched(x,y)) {
-            cellStates[x][y] = CellState.DUG;
-            if (containsMine(x,y)) {
+        if (isValidBoardCoordinate(x,y) && isUntouched(x,y)) {
+            boolean containedMine = containsMine(x,y);
+            
+            recursiveDig(x,y);
+            
+            if (containedMine) {
                 removeMine(x,y);
                 checkRep();
                 return true;
@@ -286,14 +307,15 @@ public class Board {
     /**
      * Flags the cell (x,y) on this Minesweeper board, if the cell has not been dug or is not already flagged.
      * If the cell has been dug or is already flagged, the method does nothing.
+     * All of this happens in the case where x,y are integers such that isValidBoardCoordinate(x,y) returns true
      * 
-     * Requires x,y to be integers such that isValidBoardCoordinate(x,y) returns true.
+     * In the case where isValidBoardCoordinate(x,y) returns false, the board remains unchanged.
      * 
      * @param x the x-coordinate of the cell to be flagged
      * @param y the y-coordinate of the cell to be flagged
      */
     public synchronized void flag(int x, int y) {
-        if (isUntouched(x,y))
+        if (isValidBoardCoordinate(x,y) && isUntouched(x,y))
             cellStates[x][y] = CellState.FLAGGED;
         checkRep();
     }
@@ -301,24 +323,39 @@ public class Board {
     /**
      * Deflags the cell (x,y) on this Minesweeper board, if the cell is already flagged.
      * If the cell has been dug or has not been flagged, the method does nothing.
+     * All of this happens in the case where x,y are integers such that isValidBoardCoordinate(x,y) returns true
      * 
-     * Requires x,y to be integers such that isValidBoardCoordinate(x,y) returns true.
+     * In the case where isValidBoardCoordinate(x,y) returns false, the board remains unchanged.
      * 
      * @param x the x-coordinate of the cell to be deflagged
      * @param y the y-coordinate of the cell to be deflagged
      */
     public synchronized void deflag(int x, int y) {
-        if (isFlagged(x,y))
+        if (isValidBoardCoordinate(x,y) && isFlagged(x,y))
             cellStates[x][y] = CellState.UNTOUCHED;
         checkRep();
     }
     
     // ---------------------------------------------- Other Methods ------------------------------------------------
     
+    /**
+     * Returns a String representation of the board that consists of a series of newline-separated 
+     * rows of space-separated characters, thereby giving a grid representation of the board’s state
+     * with exactly one char for each square. The mapping of characters is as follows:
+     *      “-” for squares with state untouched.
+     *      “F” for squares with state flagged.
+     *      “ ” (space) for squares with state dug and 0 neighbors that have a bomb.
+     *      integer COUNT in range [1-8] for squares with state dug and COUNT neighbors that have a bomb.
+     *      
+     *  Coordinates work from the origin (0,0) on the top left, x-coordinates increase leftware, and y-coordinates
+     *  increasing downward.
+     *  
+     *  @return A string representing the board as described in this spec.
+     */
     @Override
     public synchronized String toString() {
-        StringWriter output = new StringWriter();
-        PrintWriter out = new PrintWriter(output);
+        StringWriter output = new StringWriter();       // StringWriter represents a stream for building a String
+        PrintWriter out = new PrintWriter(output);      // PrintWriter used on this stream for platform-independence of println()
         
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width-1; x++) {
@@ -345,16 +382,29 @@ public class Board {
         return output.toString().replaceAll("\\s+$","");
     }
     
+    /**
+     * Returns a String representation of the board that consists of a series of newline-separated 
+     * rows of space-separated characters, giving a grid representation of the board’s private state of 
+     * mines on the board, with exactly one char for each square. The mapping of characters is as follows:
+     *      “-” for squares with no mines.
+     *      “*” for squares with a mine.
+     *      
+     *  Coordinates work from the origin (0,0) on the top left, x-coordinates increase leftware, and y-coordinates
+     *  increasing downward.
+     *  
+     *  @return A string representing the board as described in this spec.
+     */
     public synchronized String toMineString() {
         StringWriter output = new StringWriter();
         PrintWriter out = new PrintWriter(output);
         
         for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                if (containsMine(x,y)) out.print("*");
-                else                   out.print("-");
+            for (int x = 0; x < width-1; x++) {
+                if (containsMine(x,y)) out.print("* ");
+                else                   out.print("- ");
             }
             
+            out.print(containsMine(width-1,y) ? "*" : "-");
             out.println();
         }
         
@@ -363,6 +413,27 @@ public class Board {
     }
     
     // ---------------------------------------------- Helper Methods -----------------------------------------------
+    
+    /*
+     *  Performs the recursive dig procedure specified in the specification of the DIG operation.
+     *  Sets cell (x,y) to the dug state, and, if there are no mines in the surrounding cells, recursively
+     *  calls on the dig procedure to set those cells to the dug state as well.
+     */
+    private void recursiveDig(int x, int y) {
+        cellStates[x][y] = CellState.DUG;
+        
+        for (int dx = -1; dx <= 1; dx++)
+            for (int dy = -1; dy <= 1; dy++) {
+                if (dx == 0 && dy == 0) continue;
+                if (isValidBoardCoordinate(x+dx,y+dy) && containsMine(x+dx, y+dy)) return;
+            }
+        
+        for (int dx = -1; dx <= 1; dx++)
+            for (int dy = -1; dy <= 1; dy++) {
+                if (dx == 0 && dy == 0) continue;
+                if (isValidBoardCoordinate(x+dx,y+dy) && isUntouched(x+dx, y+dy)) recursiveDig(x+dx, y+dy);
+            }
+    }
     
     /*
      *  Counts the number of mines surrounding cell (i,j), and returns the count.
@@ -411,13 +482,8 @@ public class Board {
     
     // =============================================== STATIC METHODS ===============================================
     
-    /**
+    /*
      *  Returns an array of n random distinct integers, in the range of [min, max)
-     *  @param min an integer denoting inclusive lower bound of the random integers
-     *  @param max an integer, greater than min, denoting the exclusive upper bound of random integers
-     *  @param n a positive integer less than or equal to max-min, denoting the number of distinct random integers
-     *  to generate
-     *  @return a list of n distinct integers in the range of [min, max)
      */
     private static int[] randomIntegers(int min, int max, int n) {
         List<Integer> list = new ArrayList<Integer>(max-min);
@@ -430,8 +496,4 @@ public class Board {
         return arr;
     }
     
-//    public static void main(String[] args) {
-//        Board board = new Board(20,14);
-//        System.out.println(board);
-//    }
 }

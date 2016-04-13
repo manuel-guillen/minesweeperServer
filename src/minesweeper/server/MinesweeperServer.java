@@ -10,7 +10,7 @@ import java.util.*;
 import minesweeper.Board;
 
 /**
- * Represents a Multiplayer Minesweeper server.
+ * Represents a server for thread-safe concurrent playing of Multiplayer Minesweeper over a network.
  */
 public class MinesweeperServer {
     
@@ -46,7 +46,7 @@ public class MinesweeperServer {
      */
     
     /*
-     *  System thread safety argument
+     *  System Thread Safety Argument
      *  =============================
      *  External threads:
      *  Synchronization is used to ensure this MinesweeperServer object is not called to serve()
@@ -77,12 +77,21 @@ public class MinesweeperServer {
 
     /**
      * Run the server, listening for client connections and handling them.
+     * Also prints IP address & port number for server connection in standard output,
+     * as well as the distribution of mines on the Minesweeper board (private information
+     * on the server)
      * Never returns unless an exception is thrown.
      * 
      * @throws IOException if the main server socket is broken
      *                     (IOExceptions from individual clients do *not* terminate serve())
      */
     public synchronized void serve() throws IOException {
+        System.out.println("Server IP Address: " + Inet4Address.getLocalHost().getHostAddress());
+        System.out.println("Server Port: " + serverSocket.getLocalPort());
+        System.out.println("Board - Mine Layout:");
+        System.out.println(board.toMineString());
+        System.out.println();
+        
         while (true) {
             Socket socket = serverSocket.accept();
             new Thread(new MinesweeperClientHandler(socket, debug, board)).start();

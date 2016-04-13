@@ -40,17 +40,40 @@ public class MinesweeperClientHandler implements Runnable {
      *  No observer methods, all field references are kept within class, no references are leaked
      */
     
-    @SuppressWarnings("serial")
-    private class ClientDisconnectException extends RuntimeException {}
+    /*
+     *  System Thread Safety Argument
+     *  =============================
+     *  This handler represents a thread in the MinesweeperServer system.
+     *  It does not initiate any threads, nor does it interfere with other threads
+     *  as it is only used by MinesweeperServer to concurrently process clients.
+     */
     
+    /**
+     * Creates a new MinesweeperClientHandler to handle the client at the other
+     * end of the connection given access to by socket, with debug flag set by debug
+     * and the Minesweeper board that is being updated by the communication with the
+     * client.
+     * 
+     * @param socket the Socket at our end of the communication with the client
+     * @param debug the flag denoting if debug mode is on
+     * @param board the Minesweeper board being updated by the communication.
+     */
     public MinesweeperClientHandler(Socket socket, boolean debug, Board board) {
         this.socket = socket;
         this.debug = debug;
         this.board = board;
     }
     
+    @SuppressWarnings("serial")
+    // Represents client disconnection to exit run()
+    private class ClientDisconnectException extends RuntimeException {}
+    
     /**
      * Handle the single client connection. Terminate when client disconnects.
+     * 
+     * This method should not be directly called. Since this object is a Runnable,
+     * this method is meant to executed concurrently by a call to its wrapping Thread
+     * with start().
      * 
      * @param socket socket where the client is connected
      */
@@ -60,12 +83,19 @@ public class MinesweeperClientHandler implements Runnable {
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
         ){
+            int usersConnected = Thread.activeCount()-1;    // Thread.activeCount() counts main thread & number of threads in our subgroup:
+                                                            // MinesweeperClientHandler objects running concurrently. (Subtract 1 to ignore main thread)
+            
+            System.out.println("User Connected. " + usersConnected + " player" + (usersConnected == 1 ? "" : "s") + " connected.");
+            
             out.println("Welcome to Minesweeper. Board: " + board.getWidth() + " columns by " + board.getHeight() + " rows." +
                         " Players: " + (Thread.activeCount()-1) + " including you. Type 'help' for help.");
             
             for (String line = in.readLine(); line != null; line = in.readLine()) {
                 String output = handleRequest(line);
-                out.println(output);
+                if (!output.equals("BYE")) 
+                    out.println(output);
+                
                 if (output.equals("BOOM!") || !debug && output.equals("BYE"))
                     throw new ClientDisconnectException();
             }
@@ -73,9 +103,10 @@ public class MinesweeperClientHandler implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClientDisconnectException e) {
-            System.out.println("User Disconnected.");
+            int usersConnected = Thread.activeCount()-1;    // Counts concurrent MinesweeperClientHandlers (by ignoring main thread from MinesweeperServer)
+            usersConnected--;                               // Remove this disconnecting MinesweeperClientHandler from connected users count.
+            System.out.println("User Disconnected. " + usersConnected + " players connected.");
         }
-        
     }
     
     /**
