@@ -34,38 +34,37 @@ public class Board {
      *  ====================
      *  Represents a rectangular Minesweeper board with dimensions width by height, where:
      *      - The state of each cell on the board is represented by the array cellStates, where a cell (x,y) is
-     *        either "untouched", "flagged", or "dug", as represented by the CellState enum at cellStates[y][x]
+     *        either "untouched", "flagged", or "dug", as represented by the CellState enum at cellStates[x][y]
      *        
      *      - The location of mines on the board is represented by the array mines, where a cell (x,y) has a
-     *        mine if and only if mines[y][x]
+     *        mine if and only if mines[x][y]
      *        
      *      - The number of mines surrounding a cell on the board is represented by the array mineCounts, where
-     *        a cell (x,y) has mineCounts[y][x] mines in its surrounding 8 cells.
+     *        a cell (x,y) has mineCounts[x][y] mines in its surrounding 8 cells.
      *      
-     *  (NOTE: (0,0) is top-left, and (i,j) cells have increasing i moving right on the abstract board and
-     *         have increasing j moving downward on the abstract board. A point (x,y) is represented with array
-     *         index [y][x] since 2D arrays in Java work with [row][column] indexing.
+     *  (NOTE: (0,0) is top-left, and (x,y) cells have increasing x moving right on the abstract board and
+     *         have increasing y moving downward on the abstract board.
      */
     
     /*
      *  Rep Invariant
      *  =============
-     *  cellStates is an array of height arrays, each of length width
-     *  mines is an array of height arrays, each of length width
-     *  mineCounts is an array of height arrays, each of length width
+     *  cellStates is a two-dimensional array of dimensions width x length
+     *  mines is a two-dimensional array of dimensions width x length
+     *  mineCounts is a two-dimensional array of dimensions width x length
      *  
      *  For all 0 <= x < width, 0 <= y < height:
-     *      - mineCounts[y][x] is equal to the number of the following elements that are true:
-     *                                          1) mines[y][x+1]
-     *                                          2) mines[y-1][x+1]
-     *                                          3) mines[y-1][x]
-     *                                          4) mines[y-1][x-1]
-     *                                          5) mines[y][x-1]
-     *                                          6) mines[y+1][x-1]
-     *                                          7) mines[y+1][x]
-     *                                          8) mines[y+1][x+1]
+     *      - mineCounts[x][y] is equal to the number of the following elements that are true:
+     *                                          1) mines[x+1][y]
+     *                                          2) mines[x+1][y-1]
+     *                                          3) mines[x][y-1]
+     *                                          4) mines[x-1][y-1]
+     *                                          5) mines[x-1][y]
+     *                                          6) mines[x-1][y+1]
+     *                                          7) mines[x][y+1]
+     *                                          8) mines[x+1][y+1]
      *      
-     *      - If cellStates[y][x] = DUG, mines[y][x] = false
+     *      - If cellStates[x][y] = DUG, mines[x][y] = false
      */
     
     /*
@@ -131,7 +130,7 @@ public class Board {
             
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
-                    cellStates[y][x] = CellState.UNTOUCHED;
+                    cellStates[x][y] = CellState.UNTOUCHED;
                     if (in.nextInt() == 1) placeMine(x,y);
                 }
             }
@@ -144,7 +143,6 @@ public class Board {
     }
     
     // ------------------------------------------------ Check Rep ---------------------------------------------------
-    
 
     /*
      *  Asserts the rep invariant.
@@ -154,14 +152,14 @@ public class Board {
         assert mines.length == width;
         assert mineCounts.length == width;
         
-        for (int y = 0; y < height; y++) {
-            assert cellStates[y].length == width;
-            assert mines[y].length == width;
-            assert mineCounts[y].length == width;
+        for (int x = 0; x < width; x++) {
+            assert cellStates[x].length == height;
+            assert mines[x].length == height;
+            assert mineCounts[x].length == height;
             
-            for (int x = 0; x < width; x++) {
-                assert mineCounts[y][x] == countSurroundingMines(x,y);
-                if (cellStates[y][x].equals(CellState.DUG)) assert !mines[y][x];
+            for (int y = 0; y < height; y++) {
+                assert mineCounts[x][y] == countSurroundingMines(x,y);
+                if (cellStates[x][y].equals(CellState.DUG)) assert !mines[x][y];
             }
         }
             
@@ -206,7 +204,7 @@ public class Board {
      * @return true if the cell (x,y) of this Minesweeper board is in the untouched state.
      */
     public boolean isUntouched(int x, int y) {
-        return cellStates[y][x].equals(CellState.UNTOUCHED);
+        return cellStates[x][y].equals(CellState.UNTOUCHED);
     }
     
     /**
@@ -218,7 +216,7 @@ public class Board {
      * @return true if the cell (x,y) of this Minesweeper board is in the flagged state.
      */
     public boolean isFlagged(int x, int y) {
-        return cellStates[y][x].equals(CellState.FLAGGED);
+        return cellStates[x][y].equals(CellState.FLAGGED);
     }
     
     /**
@@ -230,7 +228,7 @@ public class Board {
      * @return true if the cell (x,y) of this Minesweeper board is in the dug (opened) state.
      */
     public boolean hasBeenDug(int x, int y) {
-        return cellStates[y][x].equals(CellState.DUG);
+        return cellStates[x][y].equals(CellState.DUG);
     }
     
     /**
@@ -242,7 +240,7 @@ public class Board {
      * @return true if there is a mine in cell (x,y) of this Minesweeper board. Returns false, otherwise.
      */
     public boolean containsMine(int x, int y) {
-        return mines[y][x];
+        return mines[x][y];
     }
     
     /**
@@ -254,7 +252,7 @@ public class Board {
      * @return true the number of mines surrounding the cell (x,y) on this Minesweeper board.
      */
     public int getMineCount(int x, int y) {
-        return mineCounts[y][x];
+        return mineCounts[x][y];
     }
 
     // ------------------------------------------------ Mutators ---------------------------------------------------
@@ -267,13 +265,13 @@ public class Board {
      * 
      * Requires that x,y be integers such that isValidBoardCoordinate(x,y) return true.
      * 
-     * @param x the x-coordinate of cell being dug
-     * @param y the y-coordinate of cell being dug
+     * @param x the x-coordinate of cell to be opened/dug
+     * @param y the y-coordinate of cell to be opened/dug
      * @return true if this cell was untouched before and had a mine at this location. Otherwise, return false.
      */
     public boolean dig(int x, int y) {
         if (isUntouched(x,y)) {
-            setCellState(x,y,CellState.DUG);
+            cellStates[x][y] = CellState.DUG;
             if (containsMine(x,y)) {
                 removeMine(x,y);
                 checkRep();
@@ -285,15 +283,33 @@ public class Board {
         return false;
     }
     
+    /**
+     * Flags the cell (x,y) on this Minesweeper board, if the cell has not been dug or is not already flagged.
+     * If the cell has been dug or is already flagged, the method does nothing.
+     * 
+     * Requires x,y to be integers such that isValidBoardCoordinate(x,y) returns true.
+     * 
+     * @param x the x-coordinate of the cell to be flagged
+     * @param y the y-coordinate of the cell to be flagged
+     */
     public void flag(int x, int y) {
         if (isUntouched(x,y))
-            setCellState(x,y,CellState.FLAGGED);
+            cellStates[x][y] = CellState.FLAGGED;
         checkRep();
     }
     
+    /**
+     * Deflags the cell (x,y) on this Minesweeper board, if the cell is already flagged.
+     * If the cell has been dug or has not been flagged, the method does nothing.
+     * 
+     * Requires x,y to be integers such that isValidBoardCoordinate(x,y) returns true.
+     * 
+     * @param x the x-coordinate of the cell to be deflagged
+     * @param y the y-coordinate of the cell to be deflagged
+     */
     public void deflag(int x, int y) {
         if (isFlagged(x,y))
-            setCellState(x,y,CellState.UNTOUCHED);
+            cellStates[x][y] = CellState.UNTOUCHED;
         checkRep();
     }
     
@@ -318,7 +334,24 @@ public class Board {
         }
         
         out.close();
-        return output.toString();
+        return output.toString().replaceAll("\\s+$","");
+    }
+    
+    public String toMineString() {
+        StringWriter output = new StringWriter();
+        PrintWriter out = new PrintWriter(output);
+        
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (containsMine(x,y)) out.print("*");
+                else                   out.print("-");
+            }
+            
+            out.println();
+        }
+        
+        out.close();
+        return output.toString().replaceAll("\\s+$","");
     }
     
     // ---------------------------------------------- Helper Methods -----------------------------------------------
@@ -338,21 +371,16 @@ public class Board {
         return count;
     }
     
-    private void setCellState(int x, int y, CellState dug) {
-        // TODO Auto-generated method stub
-        
-    }
-    
     /*
      *  Places a mine at cell (x,y) and updates mine counts in mineCounts array
      */
     private void placeMine(int x, int y) {
-        mines[y][x] = true;
+        mines[x][y] = true;
         
         for (int dx = -1; dx <= 1; dx++)
             for (int dy = -1; dy <= 1; dy++) {
                 if (dx == 0 && dy == 0) continue;
-                if (isValidBoardCoordinate(x+dx,y+dy)) incrementMineCount(x+dx,y+dy);
+                if (isValidBoardCoordinate(x+dx,y+dy)) mineCounts[x+dx][y+dy]++;;
             }
         
         checkRep();
@@ -362,28 +390,18 @@ public class Board {
      *  Removes a mine at cell (x,y) and updates mine counts in mineCounts array
      */
     private void removeMine(int x, int y) {
-        mines[y][x] = false;
+        mines[x][y] = false;
         
         for (int dx = -1; dx <= 1; dx++)
             for (int dy = -1; dy <= 1; dy++) {
                 if (dx == 0 && dy == 0) continue;
-                if (isValidBoardCoordinate(x+dx,y+dy)) decrementMineCount(x+dx,y+dy);
+                if (isValidBoardCoordinate(x+dx,y+dy) && mineCounts[x+dx][y+dy] > 0) mineCounts[x+dx][y+dy]--;
             }
         
         checkRep();
     }
     
-    private void incrementMineCount(int x, int y) {
-        mineCounts[y][x]++;
-    }
-    
-    private void decrementMineCount(int x, int y) {
-        mineCounts[y][x]--;
-        if (mineCounts[y][x] < 0) mineCounts[y][x] = 0;
-    }
-    
-
-    // ========================================================STATIC METHODS=========================================================
+    // =============================================== STATIC METHODS ===============================================
     
     /**
      *  Returns an array of n random distinct integers, in the range of [min, max)
@@ -403,4 +421,5 @@ public class Board {
         for (int i = 0; i < n; i++) arr[i] = list.get(i);
         return arr;
     }
+    
 }
