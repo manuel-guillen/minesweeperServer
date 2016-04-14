@@ -374,7 +374,7 @@ public class Board {
             if (isUntouched(width-1,y))       out.print("-");
             else if (isFlagged(width-1,y))    out.print("F");
             else {
-                int c = getMineCount(width,y);
+                int c = getMineCount(width-1,y);
                 out.print(c == 0 ? " " : c);
             }
             
