@@ -343,7 +343,7 @@ public class Board {
     
     /**
      * Returns a String representation of the board that consists of a series of newline-separated 
-     * rows of space-separated characters, thereby giving a grid representation of the board’s state
+     * rows of space-separated characters, thereby giving a grid representation of the boards state
      * with exactly one char for each square. The mapping of characters is as follows:
      *      - for squares with state untouched.
      *      F for squares with state flagged.
