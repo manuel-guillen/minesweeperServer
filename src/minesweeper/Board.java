@@ -296,9 +296,11 @@ public class Board {
             
             if (containedMine) {
                 removeMine(x,y);
+                recursiveDig(x,y);
                 checkRep();
                 return true;
-            }
+            } else
+                recursiveDig(x,y);
         }
         
         checkRep();
@@ -343,9 +345,9 @@ public class Board {
      * Returns a String representation of the board that consists of a series of newline-separated 
      * rows of space-separated characters, thereby giving a grid representation of the board’s state
      * with exactly one char for each square. The mapping of characters is as follows:
-     *      “-” for squares with state untouched.
-     *      “F” for squares with state flagged.
-     *      “ ” (space) for squares with state dug and 0 neighbors that have a bomb.
+     *      - for squares with state untouched.
+     *      F for squares with state flagged.
+     *        (space) for squares with state dug and 0 neighbors that have a bomb.
      *      integer COUNT in range [1-8] for squares with state dug and COUNT neighbors that have a bomb.
      *      
      *  Coordinates work from the origin (0,0) on the top left, x-coordinates increase leftware, and y-coordinates
@@ -385,10 +387,10 @@ public class Board {
     
     /**
      * Returns a String representation of the board that consists of a series of newline-separated 
-     * rows of space-separated characters, giving a grid representation of the board’s private state of 
+     * rows of space-separated characters, giving a grid representation of the boards private state of 
      * mines on the board, with exactly one char for each square. The mapping of characters is as follows:
-     *      “-” for squares with no mines.
-     *      “*” for squares with a mine.
+     *      - for squares with no mines.
+     *      * for squares with a mine.
      *      
      *  Coordinates work from the origin (0,0) on the top left, x-coordinates increase leftware, and y-coordinates
      *  increasing downward.
