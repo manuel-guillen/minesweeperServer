@@ -380,7 +380,7 @@ public class Board {
         }
         
         out.close();
-        return output.toString().replaceAll("\\s+$","");
+        return output.toString().replaceAll("[\r\n]+$","");
     }
     
     /**
@@ -410,7 +410,7 @@ public class Board {
         }
         
         out.close();
-        return output.toString().replaceAll("\\s+$","");
+        return output.toString().replaceAll("[\r\n]+$","");
     }
     
     // ---------------------------------------------- Helper Methods -----------------------------------------------
