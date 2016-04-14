@@ -292,8 +292,6 @@ public class Board {
         if (isValidBoardCoordinate(x,y) && isUntouched(x,y)) {
             boolean containedMine = containsMine(x,y);
             
-            recursiveDig(x,y);
-            
             if (containedMine) {
                 removeMine(x,y);
                 recursiveDig(x,y);
