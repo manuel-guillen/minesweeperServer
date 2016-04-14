@@ -96,7 +96,7 @@ public class MinesweeperClientHandler implements Runnable {
                 if (!output.equals("BYE")) 
                     out.println(output);
                 
-                if (output.equals("BOOM!") || !debug && output.equals("BYE"))
+                if (output.equals("BYE") || !debug && output.equals("BOOM!"))
                     throw new ClientDisconnectException();
             }
             
