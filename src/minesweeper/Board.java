@@ -463,7 +463,7 @@ public class Board {
                 if (isValidBoardCoordinate(x+dx,y+dy)) mineCounts[x+dx][y+dy]++;;
             }
         
-        checkRep();
+//        checkRep();       This method is called only during object construction so we cannot check the rep
     }
     
     /*
@@ -495,6 +495,11 @@ public class Board {
         int[] arr = new int[n];
         for (int i = 0; i < n; i++) arr[i] = list.get(i);
         return arr;
+    }
+    
+    public static void main(String[] args) {
+        Board board = new Board(new File("largeBoard.txt"));
+        System.out.println(board);
     }
     
 }
