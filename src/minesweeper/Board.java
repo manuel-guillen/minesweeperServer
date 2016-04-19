@@ -94,8 +94,7 @@ public class Board {
      *  Private methods are not explicitly available to external threads (Note: There are no internal threads as this object
      *  does not create new threads). However, these private methods are called from within public methods, which can be called
      *  concurrently. Since these methods are called from within synchronized methods only, synchronization still provides
-     *  thread-safety, because the method call still has the lock to this object, while within the private method (furthermore, we
-     *  cannot have helper methods be synchronized if we want public synchronized methods to call to them during execution).
+     *  thread-safety, because the method call still has the lock to this object, while within the private method.
      */
     
     // ----------------------------------------------- Constructors -------------------------------------------------
@@ -289,20 +288,14 @@ public class Board {
      * @return true if this cell was untouched before and had a mine at this location. Otherwise, return false.
      */
     public synchronized boolean dig(int x, int y) {
-        if (isValidBoardCoordinate(x,y) && isUntouched(x,y)) {
-            boolean containedMine = containsMine(x,y);
-            
-            if (containedMine) {
-                removeMine(x,y);
-                recursiveDig(x,y);
-                checkRep();
-                return true;
-            } else
-                recursiveDig(x,y);
-        }
+        if (!isValidBoardCoordinate(x,y) || !isUntouched(x,y)) return false;
         
+        boolean containedMine = containsMine(x,y);
+        if (containedMine) removeMine(x,y);
+        
+        recursiveDig(x,y);
         checkRep();
-        return false;
+        return containedMine;
     }
     
     /**
