@@ -1,10 +1,10 @@
 package minesweeper.server;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import minesweeper.Board;
 
@@ -16,13 +16,14 @@ public class MinesweeperClientHandler implements Runnable {
     private final Socket socket;
     private final Board board;
     private final boolean debug;
+    private final AtomicInteger players;
     
     /*
      *  Abstraction Function
      *  ====================
      *  Represents a handler for a multiplayer Minesweeper Server game client, where
-     *  the server's game board is represented by board, and the endpoint of the communication
-     *  channel with the client is represented by socket
+     *  the server's game board is represented by board, the server's client count is represented
+     *  by players, and the endpoint of the communication channel with the client is represented by socket
      *  (debug represents whether or not server is in debug setting - see field comment)
      *  
      */
@@ -46,6 +47,8 @@ public class MinesweeperClientHandler implements Runnable {
      *  This handler represents a thread in the MinesweeperServer system.
      *  It does not initiate any threads, nor does it interfere with other threads
      *  as it is only used by MinesweeperServer to concurrently process clients.
+     *  It shares board and players with other threads, but these fields are instance
+     *  of threadsafe datatypes. (See Thread safety argument for MinesweeperServer)
      */
     
     /**
@@ -58,10 +61,11 @@ public class MinesweeperClientHandler implements Runnable {
      * @param debug the flag denoting if debug mode is on
      * @param board the Minesweeper board being updated by the communication.
      */
-    public MinesweeperClientHandler(Socket socket, boolean debug, Board board) {
+    public MinesweeperClientHandler(Socket socket, boolean debug, Board board, AtomicInteger players) {
         this.socket = socket;
         this.debug = debug;
         this.board = board;
+        this.players = players;
     }
     
     @SuppressWarnings("serial")
@@ -82,14 +86,11 @@ public class MinesweeperClientHandler implements Runnable {
         try (
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-        ){
-            int usersConnected = Thread.activeCount()-1;    // Thread.activeCount() counts main thread & number of threads in our subgroup:
-                                                            // MinesweeperClientHandler objects running concurrently. (Subtract 1 to ignore main thread)
-            
-            System.out.println("User Connected. " + usersConnected + " player" + (usersConnected == 1 ? "" : "s") + " connected.");
+        ){  
+            System.out.println("User Connected. " + players + " player" + (players.get() == 1 ? "" : "s") + " connected.");
             
             out.println("Welcome to Minesweeper. Board: " + board.getWidth() + " columns by " + board.getHeight() + " rows." +
-                        " Players: " + (Thread.activeCount()-1) + " including you. Type 'help' for help.");
+                        " Players: " + players.get() + " including you. Type 'help' for help.");
             
             for (String line = in.readLine(); line != null; line = in.readLine()) {
                 String output = handleRequest(line);
@@ -100,12 +101,15 @@ public class MinesweeperClientHandler implements Runnable {
                     throw new ClientDisconnectException();
             }
             
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (ClientDisconnectException e) {
-            int usersConnected = Thread.activeCount()-1;    // Counts concurrent MinesweeperClientHandlers (by ignoring main thread from MinesweeperServer)
-            usersConnected--;                               // Remove this disconnecting MinesweeperClientHandler from connected users count.
-            System.out.println("User Disconnected. " + usersConnected + " players connected.");
+            // Intentional client disconnection.
+            // Disconnection addressed in finally statement.
+        } catch (Exception e) {
+            e.printStackTrace();    // Unintentional client disconnection.
+                                    // Disconnection addressed in finally statement.
+        } finally {
+            int playersLeft = players.decrementAndGet();
+            System.out.println("User Disconnected. " + playersLeft + " player" + (playersLeft == 1 ? "" : "s") + " connected.");
         }
     }
     

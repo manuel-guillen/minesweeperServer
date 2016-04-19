@@ -3,9 +3,17 @@
  */
 package minesweeper.server;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import minesweeper.Board;
 
@@ -22,12 +30,14 @@ public class MinesweeperServer {
     private final ServerSocket serverSocket;        // Socket for receiving incoming connections.
     private final boolean debug;                    // True if the server should *not* disconnect a client after a BOOM message.
     private final Board board;                      // Board of Minesweeper game being played on server.
+    private final AtomicInteger players;            // A synchronized count of players on the server.
     
     /*
      *  Abstraction Function
      *  ====================
-     *  Represents a server for a multiplayer Minesweeper game, with game board represented by board, and
-     *  with a server socket listening for incoming server connection requests.
+     *  Represents a server for a multiplayer Minesweeper game, with game board represented by board,
+     *  with a server socket listening for incoming server connection requests, and with players number of players
+     *  connected to the server.
      *  (debug represents whether or not server is in debug setting - see field comment)
      *  
      */
@@ -55,10 +65,11 @@ public class MinesweeperServer {
      *  
      *  Internal threads:
      *  Threads are initiated by this MinesweeperServer. Thread safety is implemented as follows:
-     *      - serverSocket      Confinement         Threads initiated here do not have access to serverSocket
-     *      - debug             Immutability        Threads cannot modify the immutable value of debug
-     *      - board             Synchronization     Threads can only mutate board once at a time, since board is
-     *                                              a thread-safe data type (see Board spec and thread-safety argument)
+     *      - serverSocket      Confinement             Threads initiated here do not have access to serverSocket
+     *      - debug             Immutability            Threads cannot modify the immutable value of debug
+     *      - board             Synchronization         Threads can only mutate board once at a time, since board is
+     *                                                  a thread-safe data type (see Board spec and thread-safety argument)
+     *      - players           Thread-safe datatype    AtomicInteger is a thread-safe data type that provides atomic method calls.
      */
 
 
@@ -73,6 +84,7 @@ public class MinesweeperServer {
         serverSocket = new ServerSocket(port);
         this.debug = debug;
         this.board = board;
+        this.players = new AtomicInteger();
     }
 
     /**
@@ -94,7 +106,8 @@ public class MinesweeperServer {
         
         while (true) {
             Socket socket = serverSocket.accept();
-            new Thread(new MinesweeperClientHandler(socket, debug, board)).start();
+            players.incrementAndGet();
+            new Thread(new MinesweeperClientHandler(socket, debug, board, players)).start();
         }
     }
 
