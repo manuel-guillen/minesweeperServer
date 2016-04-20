@@ -87,7 +87,7 @@ public class MinesweeperClientHandler implements Runnable {
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
         ){  
-            System.out.println("User Connected. " + players + " player" + (players.get() == 1 ? "" : "s") + " connected.");
+            System.out.println("User Connected. " + players.get() + " player" + (players.get() == 1 ? "" : "s") + " connected.");
             
             out.println("Welcome to Minesweeper. Board: " + board.getWidth() + " columns by " + board.getHeight() + " rows." +
                         " Players: " + players.get() + " including you. Type 'help' for help.");

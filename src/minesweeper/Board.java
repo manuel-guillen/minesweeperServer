@@ -476,10 +476,15 @@ public class Board {
     
     // =============================================== STATIC METHODS ===============================================
     
-    /*
+    /**
      *  Returns an array of n random distinct integers, in the range of [min, max)
+     *  @param min an integer denoting inclusive lower bound of the random integers
+     *  @param max an integer, greater than min, denoting the exclusive upper bound of random integers
+     *  @param n a positive integer less than or equal to max-min, denoting the number of distinct random integers
+     *  to generate
+     *  @return a list of n distinct integers in the range of [min, max)
      */
-    private static int[] randomIntegers(int min, int max, int n) {
+    public static int[] randomIntegers(int min, int max, int n) {
         List<Integer> list = new ArrayList<Integer>(max-min);
         for (int num = min; num < max; num++) list.add(num);
         
@@ -488,11 +493,6 @@ public class Board {
         int[] arr = new int[n];
         for (int i = 0; i < n; i++) arr[i] = list.get(i);
         return arr;
-    }
-    
-    public static void main(String[] args) {
-        Board board = new Board(new File("largeBoard.txt"));
-        System.out.println(board);
     }
     
 }
