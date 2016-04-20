@@ -78,6 +78,7 @@ public class MinesweeperServer {
      * 
      * @param port port number, requires 0 <= port <= 65535
      * @param debug debug mode flag
+     * @param board the Minesweeper board object to be used by the server
      * @throws IOException if an error occurs opening the server socket
      */
     public MinesweeperServer(int port, boolean debug, Board board) throws IOException {
@@ -129,7 +130,7 @@ public class MinesweeperServer {
      */
     public static void runMinesweeperServer(boolean debug, Optional<File> file, int sizeX, int sizeY, int port) throws IOException {
         MinesweeperServer server = new MinesweeperServer(port, debug,
-                                                file.isPresent() ? new Board(file.get()) : new Board(sizeX, sizeY));
+                                                file.isPresent() ? new Board(file.get()) : new Board(sizeX, sizeY));    // Use file if present, otherwise use provided dimensions
         server.serve();
     }
 

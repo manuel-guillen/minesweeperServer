@@ -26,6 +26,8 @@ public class Board {
         UNTOUCHED, FLAGGED, DUG
     }
     
+    private static final int CELLS_PER_MINE = 3;    // Cell-to-mine ratio for random generated boards
+    
     private final int width, height;
     
     private final CellState[][] cellStates;
@@ -116,7 +118,7 @@ public class Board {
         for (CellState[] row : cellStates)
             Arrays.fill(row, CellState.UNTOUCHED);
         
-        int[] mineLocations = randomIntegers(0, width*height, width*height/3);
+        int[] mineLocations = randomIntegers(0, width*height, width*height/CELLS_PER_MINE);
         for (int n : mineLocations) {
             int x = n % width, y = n / width;
             placeMine(x,y);
@@ -366,7 +368,7 @@ public class Board {
             else if (isFlagged(width-1,y))    out.print("F");
             else {
                 int c = getMineCount(width-1,y);
-                out.print(c == 0 ? " " : c);
+                out.print(c == 0 ? " " : c);        // Don't print 0 counts
             }
             
             out.println();
@@ -453,10 +455,10 @@ public class Board {
         for (int dx = -1; dx <= 1; dx++)
             for (int dy = -1; dy <= 1; dy++) {
                 if (dx == 0 && dy == 0) continue;
-                if (isValidBoardCoordinate(x+dx,y+dy)) mineCounts[x+dx][y+dy]++;;
+                if (isValidBoardCoordinate(x+dx,y+dy)) mineCounts[x+dx][y+dy]++;
             }
         
-//        checkRep();       This method is called only during object construction so we cannot check the rep
+//        checkRep();       placeMine() is called during object construction so we cannot check the rep yet
     }
     
     /*

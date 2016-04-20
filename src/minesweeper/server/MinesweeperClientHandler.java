@@ -31,7 +31,7 @@ public class MinesweeperClientHandler implements Runnable {
     /*
      *  Rep Invariant
      *  =============
-     *  true
+     *  players is nonnegative
      */
     
     /*
@@ -53,19 +53,27 @@ public class MinesweeperClientHandler implements Runnable {
     
     /**
      * Creates a new MinesweeperClientHandler to handle the client at the other
-     * end of the connection given access to by socket, with debug flag set by debug
-     * and the Minesweeper board that is being updated by the communication with the
-     * client.
+     * end of the connection given access to by socket, with debug flag set by debug,
+     * the Minesweeper board that is being updated by the communication with the
+     * client, and the shared user-count players (passed in by the server)
      * 
      * @param socket the Socket at our end of the communication with the client
      * @param debug the flag denoting if debug mode is on
      * @param board the Minesweeper board being updated by the communication.
+     * @param players the shared counter object that holds the number of users connected to the server
      */
     public MinesweeperClientHandler(Socket socket, boolean debug, Board board, AtomicInteger players) {
         this.socket = socket;
         this.debug = debug;
         this.board = board;
         this.players = players;
+    }
+    
+    /*
+     *  Asserts the rep invariant
+     */
+    private void checkRep() {
+        assert players.get() >= 0;
     }
     
     @SuppressWarnings("serial")
@@ -78,8 +86,6 @@ public class MinesweeperClientHandler implements Runnable {
      * This method should not be directly called. Since this object is a Runnable,
      * this method is meant to executed concurrently by a call to its wrapping Thread
      * with start().
-     * 
-     * @param socket socket where the client is connected
      */
     @Override
     public void run() {
@@ -87,7 +93,10 @@ public class MinesweeperClientHandler implements Runnable {
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
         ){  
-            System.out.println("User Connected. " + players.get() + " player" + (players.get() == 1 ? "" : "s") + " connected.");
+            System.out.println("User Connected. " + 
+                                players.get() +                               // Prints number of users connected
+                                " player" + (players.get() == 1 ? "" : "s") + // Prints plural correctly
+                                " connected.");
             
             out.println("Welcome to Minesweeper. Board: " + board.getWidth() + " columns by " + board.getHeight() + " rows." +
                         " Players: " + players.get() + " including you. Type 'help' for help.");
@@ -109,8 +118,13 @@ public class MinesweeperClientHandler implements Runnable {
                                     // Disconnection addressed in finally statement.
         } finally {
             int playersLeft = players.decrementAndGet();
-            System.out.println("User Disconnected. " + playersLeft + " player" + (playersLeft == 1 ? "" : "s") + " connected.");
+            System.out.println("User Disconnected. " + 
+                                playersLeft + 
+                                " player" + (playersLeft == 1 ? "" : "s") +     // Prints plural correctly
+                                " connected.");
         }
+        
+        checkRep();
     }
     
     /**
@@ -143,10 +157,10 @@ public class MinesweeperClientHandler implements Runnable {
                 if (dead) return "BOOM!";
                 
             } else if (tokens[0].equals("flag")) {
-                board.flag(x, y);
+                board.flag(x,y);
                 
             } else if (tokens[0].equals("deflag")) {
-                board.deflag(x, y);
+                board.deflag(x,y);
                 
             }
             return board.toString();
