@@ -3,11 +3,16 @@
  */
 package minesweeper;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Scanner;
 
 import org.junit.Test;
@@ -23,18 +28,11 @@ public class BoardTest {
      *  Since abstract data types are defined by their operations, constructors
      *  are tested by assuring the results from the object methods are correct.
      *  
-     *  First, the methods are tested by using the file constructor, so as to be
-     *  able to test against expected results.
-     *  Afterwards, the toString() and toMineString() tests are used to assure
-     *  the Strings represent the Board as described.
-     *  Finally, the methods are tested against the normal constructor, using
-     *  the toString() and toMineString() method for expected results from the
-     *  methods.
-     *  
-     *  There are 4 available board setup files that can be used to test
+     *  There are 4 available board setup files that can be used to test.
+     *  Methods are tested using file constructor to know what expected values to test against.
      *  
      *  getWidth(), getHeight()
-     *          - Test that this returns value specified in constructor
+     *          - Test that this returns correct value
      *  
      *  isValidBoardCoordinate(int x, int y)
      *          - Test Partition:
@@ -48,7 +46,6 @@ public class BoardTest {
      *          - Test Output Partition:
      *                  - Should return true
      *                  - Should return false
-     *          - Test these methods with file constructor to know what expected values to test against.
      *          
      *  containsMine(int x, int y)
      *          - Test Input Partition:
@@ -57,7 +54,6 @@ public class BoardTest {
      *          - Test Output Partition:
      *                  - Should return true
      *                  - Should return false
-     *          - Test these methods with file constructor to know what expected values to test against.
      *  
      *  getMineCount(int x, int y)
      *          - Test Input Partition:
@@ -66,7 +62,6 @@ public class BoardTest {
      *          - Test Output Partition:
      *                  - Should return 0
      *                  - Should return positive integer
-     *          - Test these methods with file constructor to know what expected values to test against
      *          
      *  dig(int x, int y), flag(int x, int y), deflag(int x, int y)
      *          - Test Input Partition:
@@ -74,15 +69,10 @@ public class BoardTest {
      *                  - y < 0     y = 0       0 < y < height      y >= height
      *          
      *          - Test correct mutation by using observer methods
-     *          - Test these methods with file constructor to know what expected states to test against
      *  
      *  toString(), toMineString()
      *          - Test on Board objects created with file constructor
      *          - Mutate with mutator methods
-     *          
-     *          - After testing above object methods with file constructor, we can assure data type representation
-     *            functionality is coherent with toString() and toMineString(), and so we can test the above methods
-     *            of Board with values we expect give the toString() and toMineString() representation
      */
     
     @Test(expected=AssertionError.class)
@@ -91,21 +81,22 @@ public class BoardTest {
     }
     
     // Change this to test with one of the four different board files
-    public static final String BOARD_NAME = "mediumBoard";
+    public static final String BOARD_NAME = "largeBoard";
     
     // Do not change these fields
     public static final File BOARD_FILE = new File(BOARD_NAME + ".txt");
     public static final File MINECOUNTS_FILE = new File(BOARD_NAME + "_MineCounts.txt");
-    public static final Board BOARD = new Board(BOARD_FILE);
     
     @Test public void testFileBoardWidthAndHeight() {
+        Board board = new Board(BOARD_FILE);
+        
         try (
             Scanner in = new Scanner(new FileReader(BOARD_FILE));
         ){
             
             
-            assertEquals(BOARD.getWidth(), in.nextInt());
-            assertEquals(BOARD.getHeight(), in.nextInt());
+            assertEquals(board.getWidth(), in.nextInt());
+            assertEquals(board.getHeight(), in.nextInt());
         
             
         } catch (FileNotFoundException e) {
@@ -114,6 +105,8 @@ public class BoardTest {
     }
     
     @Test public void testFileBoardValidBoardCoordinate() {
+        Board board = new Board(BOARD_FILE);
+        
         try (
             Scanner in = new Scanner(new FileReader(BOARD_FILE));
         ){
@@ -122,12 +115,12 @@ public class BoardTest {
             int width = in.nextInt();
             int height = in.nextInt();
             
-            assertFalse(BOARD.isValidBoardCoordinate(-1, -1));
-            assertTrue(BOARD.isValidBoardCoordinate(0, 0));
-            assertEquals(1 < width, BOARD.isValidBoardCoordinate(1, 0));
-            assertEquals(1 < height, BOARD.isValidBoardCoordinate(0, 1));
-            assertFalse(BOARD.isValidBoardCoordinate(width, 0));
-            assertFalse(BOARD.isValidBoardCoordinate(0, height));
+            assertFalse(board.isValidBoardCoordinate(-1, -1));
+            assertTrue(board.isValidBoardCoordinate(0, 0));
+            assertEquals(1 < width, board.isValidBoardCoordinate(1, 0));
+            assertEquals(1 < height, board.isValidBoardCoordinate(0, 1));
+            assertFalse(board.isValidBoardCoordinate(width, 0));
+            assertFalse(board.isValidBoardCoordinate(0, height));
             
             
         } catch (FileNotFoundException e) {
@@ -136,6 +129,8 @@ public class BoardTest {
     }
     
     @Test public void testFileBoardIsInStateMethodsNoMutation() {
+        Board board = new Board(BOARD_FILE);
+        
         try (
             Scanner in = new Scanner(new FileReader(BOARD_FILE));
         ){
@@ -146,9 +141,9 @@ public class BoardTest {
             
             for(int x = 0; x < width; x++)
                 for (int y = 0; y < height; y++) {
-                    assertTrue(BOARD.isUntouched(x, y));
-                    assertFalse(BOARD.isFlagged(x, y));
-                    assertFalse(BOARD.hasBeenDug(x, y));
+                    assertTrue(board.isUntouched(x, y));
+                    assertFalse(board.isFlagged(x, y));
+                    assertFalse(board.hasBeenDug(x, y));
                 }
             
             
@@ -158,6 +153,8 @@ public class BoardTest {
     }
     
     @Test public void testFileBoardContainsMine() {
+        Board board = new Board(BOARD_FILE);
+        
         try (
             Scanner in = new Scanner(new FileReader(BOARD_FILE));
         ){
@@ -168,7 +165,7 @@ public class BoardTest {
             
             for (int y = 0; y < height; y++)
                 for(int x = 0; x < width; x++) 
-                    assertEquals(in.nextInt() == 1, BOARD.containsMine(x, y));
+                    assertEquals(in.nextInt() == 1, board.containsMine(x, y));
             
             
         } catch (FileNotFoundException e) {
@@ -177,23 +174,127 @@ public class BoardTest {
     }
     
     @Test public void testFileBoardMineCount() {
+        Board board = new Board(BOARD_FILE);
+        
         try (
             Scanner in = new Scanner(new FileReader(MINECOUNTS_FILE));
         ){
             
             
-            int width = in.nextInt();
-            int height = in.nextInt();
+            int width = board.getWidth();
+            int height = board.getHeight();
             
             for (int y = 0; y < height; y++)
                 for (int x = 0; x < width; x++)
-                    assertEquals(in.nextInt(), BOARD.getMineCount(x, y));
-            
+                    assertEquals(in.nextInt(), board.getMineCount(x,y));
             
         } catch (FileNotFoundException e) {
             fail("Test board file not found.");
         }
     }
-
-    // TODO Finish tests.
+    
+    @Test public void testFileBoardFlaggingMutationAndStates() {
+        Board board = new Board(BOARD_FILE);
+        
+        for (int x = 0; x < board.getWidth(); x++) {
+            for (int y = 0; y < board.getHeight(); y++) {
+                
+                board.flag(x,y);
+                assertTrue(board.isFlagged(x,y));
+                assertFalse(board.isUntouched(x,y));
+                    
+                board.deflag(x,y);
+                assertFalse(board.isFlagged(x,y));
+                assertTrue(board.isUntouched(x,y));
+            }
+        }
+    }
+    
+    @Test public void testFileBoardDigMutationAndStates() {
+        Board board = new Board(BOARD_FILE);
+        
+        for (int x = 0; x < board.getWidth(); x++) {
+            for (int y = 0; y < board.getHeight(); y++) {
+                
+                boolean hasMine = board.containsMine(x,y);
+                boolean returnedValue = board.dig(x,y);
+                    
+                assertEquals(hasMine, returnedValue);
+                assertTrue(board.hasBeenDug(x,y));
+                assertFalse(board.isUntouched(x,y));
+                
+                board.flag(x,y);
+                assertFalse(board.isFlagged(x,y));
+                
+                board.deflag(x,y);
+                assertFalse(board.isUntouched(x,y));
+            }
+        }
+    }
+    
+    @Test public void testFileBoardDigMutationAndStates2() {
+        Board board = new Board(BOARD_FILE);
+        int width = board.getWidth(),
+            height = board.getHeight();
+        
+        int cells = width*height;
+        double flagRate = 0.4;
+        
+        int[] randomLocations = Board.randomIntegers(0, cells, (int)(cells*flagRate));
+        
+        for (int n : randomLocations) {
+            int x = n % width, y = n / width;
+            board.flag(x,y);
+        }            
+        
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                
+                if (board.isFlagged(x,y)) {
+                    board.dig(x,y);
+                    
+                } else {
+                    board.dig(x,y);
+                }
+                
+            }
+        }
+        
+        for (int n : randomLocations) {
+            int x = n % width, y = n / width;
+            
+            assertTrue(board.isFlagged(x,y));
+            assertFalse(board.hasBeenDug(x,y));
+        }
+    }
+    
+    @Test public void testFileBoardMineString() {
+        StringWriter s = new StringWriter();
+        
+        Board board = new Board(BOARD_FILE);
+        
+        try (
+            Scanner in = new Scanner(new FileReader(BOARD_FILE));
+            PrintWriter out = new PrintWriter(s);
+        ){
+            in.nextLine();  // Discard first line
+            
+            while(in.hasNextLine()) {
+                String line = in.nextLine();
+                line = line.replaceAll("0", "-");
+                line = line.replaceAll("1", "*");
+                out.println(line);
+            }
+        
+        } catch (FileNotFoundException e) {
+            fail("Test board file not found.");
+        }
+        
+        String expected = s.toString().replaceAll("[\r\n]+$", "");
+        assertEquals(expected, board.toMineString());
+    }
+    
+    @Test public void testFileBoardToString() {
+        // TODO
+    }
 }
