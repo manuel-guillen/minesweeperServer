@@ -18,7 +18,7 @@ import java.util.Scanner;
 import org.junit.Test;
 
 /**
- * Unit test for single threaded (non-concurrent) use of Board data type.
+ * Unit tests for single threaded (non-concurrent) use of Board data type.
  */
 public class BoardTest {
     
