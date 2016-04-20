@@ -84,8 +84,8 @@ public class BoardTest {
     public static final String BOARD_NAME = "largeBoard";
     
     // Do not change these fields
-    public static final File BOARD_FILE = new File(BOARD_NAME + ".txt");
-    public static final File MINECOUNTS_FILE = new File(BOARD_NAME + "_MineCounts.txt");
+    public static final File BOARD_FILE = new File("boards/" + BOARD_NAME + ".txt");
+    public static final File MINECOUNTS_FILE = new File("boards/" + BOARD_NAME + "_MineCounts.txt");
     
     @Test public void testFileBoardWidthAndHeight() {
         Board board = new Board(BOARD_FILE);
