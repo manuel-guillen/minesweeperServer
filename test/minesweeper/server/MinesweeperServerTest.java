@@ -116,9 +116,9 @@ public class MinesweeperServerTest {
         assertEquals("- - - - - - - - - - - -", in.readLine());
 
         out.println("dig 2 2");
-        assertEquals("BOOM!", in.readLine());
+        assertEquals("BOOM!", in.readLine());   // debug mode is on - continue
 
-        out.println("look"); // debug mode is on
+        out.println("look"); 
         assertEquals("- - - - - - - - - - - -", in.readLine());
         assertEquals("- - - 3 - - - - - - - -", in.readLine());
         assertEquals("- - 2 - - - - - - - - -", in.readLine());
@@ -129,7 +129,79 @@ public class MinesweeperServerTest {
         assertEquals("- - - - - - - - - - - -", in.readLine());
         assertEquals("- - - - - - - - - - - -", in.readLine());
         assertEquals("- - - - - - - - - - - -", in.readLine());
+        
+        out.println("flag 2 0");
+        assertEquals("- - F - - - - - - - - -", in.readLine());
+        assertEquals("- - - 3 - - - - - - - -", in.readLine());
+        assertEquals("- - 2 - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        
+        out.println("flag 3 0");
+        assertEquals("- - F F - - - - - - - -", in.readLine());
+        assertEquals("- - - 3 - - - - - - - -", in.readLine());
+        assertEquals("- - 2 - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        
+        out.println("flag 4 0");
+        assertEquals("- - F F F - - - - - - -", in.readLine());
+        assertEquals("- - - 3 - - - - - - - -", in.readLine());
+        assertEquals("- - 2 - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        
+        out.println("dig 4 0");
+        assertEquals("- - F F F - - - - - - -", in.readLine());
+        assertEquals("- - - 3 - - - - - - - -", in.readLine());
+        assertEquals("- - 2 - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
 
+        out.println("deflag 4 0");
+        assertEquals("- - F F - - - - - - - -", in.readLine());
+        assertEquals("- - - 3 - - - - - - - -", in.readLine());
+        assertEquals("- - 2 - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        
+        out.println("dig 2 9");
+        assertEquals("- - F F - - - - - - - -", in.readLine());
+        assertEquals("- - - 3 - - - - - - - -", in.readLine());
+        assertEquals("- - 2 - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- - - - - - - - - - - -", in.readLine());
+        assertEquals("- 2 1 3 - - - - - - - -", in.readLine());
+        assertEquals("- 1   2 - - - - - - - -", in.readLine());
+        
         out.println("bye");
         socket.close();
     }
