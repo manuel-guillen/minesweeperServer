@@ -1,6 +1,3 @@
-/* Copyright (c) 2007-2016 MIT 6.005 course staff, all rights reserved.
- * Redistribution of original or derived work requires permission of course staff.
- */
 package minesweeper.server;
 
 import java.io.File;
@@ -8,11 +5,7 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import minesweeper.Board;
@@ -22,15 +15,16 @@ import minesweeper.Board;
  */
 public class MinesweeperServer {
     
-    private static final int DEFAULT_PORT = 4444;   // Default server port.
-    private static final int MAXIMUM_PORT = 65535;  // Maximum port number as defined by ServerSocket.
-    private static final int DEFAULT_SIZE = 10;     // Default square board size.
+    /** Maximum allowed port for server connection. */
+    public static final int MAXIMUM_PORT = 65535;  
     
+    private static final int DEFAULT_PORT = 4444;               // Default server port.
+    private static final int DEFAULT_SIZE = 10;                 // Default square board size.
     
-    private final ServerSocket serverSocket;        // Socket for receiving incoming connections.
-    private final boolean debug;                    // True if the server should *not* disconnect a client after a BOOM message.
-    private final Board board;                      // Board of Minesweeper game being played on server.
-    private final AtomicInteger players;            // A synchronized count of players on the server.
+    private final ServerSocket serverSocket;                    // Socket for receiving incoming connections.
+    private final boolean debug;                                // True if the server should *not* disconnect a client after a BOOM message.
+    private final Board board;                                  // Board of Minesweeper game being played on server.
+    private final AtomicInteger players = new AtomicInteger();  // A synchronized count of players on the server.
     
     /*
      *  Abstraction Function
@@ -72,7 +66,6 @@ public class MinesweeperServer {
      *      - players           Thread-safe datatype    AtomicInteger is a thread-safe data type that provides atomic method calls.
      */
 
-
     /**
      * Make a MinesweeperServer that listens for connections on port.
      * 
@@ -81,11 +74,10 @@ public class MinesweeperServer {
      * @param board the Minesweeper board object to be used by the server
      * @throws IOException if an error occurs opening the server socket
      */
-    public MinesweeperServer(int port, boolean debug, Board board) throws IOException {
+    private MinesweeperServer(int port, boolean debug, Board board) throws IOException {
         serverSocket = new ServerSocket(port);
         this.debug = debug;
         this.board = board;
-        this.players = new AtomicInteger();
     }
 
     /**
@@ -98,7 +90,7 @@ public class MinesweeperServer {
      * @throws IOException if the main server socket is broken
      *                     (IOExceptions from individual clients do *not* terminate serve())
      */
-    public synchronized void serve() throws IOException {
+    private synchronized void serve() throws IOException {
         System.out.println("Server IP Address: " + Inet4Address.getLocalHost().getHostAddress());
         System.out.println("Server Port: " + serverSocket.getLocalPort());
         System.out.println("Board - Mine Layout:");
@@ -111,8 +103,6 @@ public class MinesweeperServer {
             new Thread(new MinesweeperClientHandler(socket, debug, board, players)).start();
         }
     }
-
-    // ========================================================STATIC METHODS=========================================================
     
     /**
      * Start a MinesweeperServer running on the specified port, with either a random new board or a
@@ -129,111 +119,14 @@ public class MinesweeperServer {
      * @throws IOException if a network error occurs
      */
     public static void runMinesweeperServer(boolean debug, Optional<File> file, int sizeX, int sizeY, int port) throws IOException {
-        MinesweeperServer server = new MinesweeperServer(port, debug,
-                                                file.isPresent() ? new Board(file.get()) : new Board(sizeX, sizeY));    // Use file if present, otherwise use provided dimensions
-        server.serve();
-    }
-
-    // ==========================================================MAIN METHOD==========================================================
-    
-    /**
-     * Start a MinesweeperServer using the given arguments.
-     * 
-     * <br> Usage:
-     *      MinesweeperServer [--debug | --no-debug] [--port PORT] [--size SIZE_X,SIZE_Y | --file FILE]
-     * 
-     * <br> The --debug argument means the server should run in debug mode. The server should disconnect a
-     *      client after a BOOM message if and only if the --debug flag was NOT given.
-     *      Using --no-debug is the same as using no flag at all.
-     * <br> E.g. "MinesweeperServer --debug" starts the server in debug mode.
-     * 
-     * <br> PORT is an optional integer in the range 0 to 65535 inclusive, specifying the port the server
-     *      should be listening on for incoming connections.
-     * <br> E.g. "MinesweeperServer --port 1234" starts the server listening on port 1234.
-     * 
-     * <br> SIZE_X and SIZE_Y are optional positive integer arguments, specifying that a random board of size
-     *      SIZE_X*SIZE_Y should be generated.
-     * <br> E.g. "MinesweeperServer --size 42,58" starts the server initialized with a random board of size
-     *      42*58.
-     * 
-     * <br> FILE is an optional argument specifying a file pathname where a board has been stored. If this
-     *      argument is given, the stored board should be loaded as the starting board.
-     * <br> E.g. "MinesweeperServer --file boardfile.txt" starts the server initialized with the board stored
-     *      in boardfile.txt.
-     * 
-     * <br> The board file format, for use with the "--file" option, is specified by the following grammar:
-     * <pre>
-     *   FILE ::= BOARD LINE+
-     *   BOARD ::= X SPACE Y NEWLINE
-     *   LINE ::= (VAL SPACE)* VAL NEWLINE
-     *   VAL ::= 0 | 1
-     *   X ::= INT
-     *   Y ::= INT
-     *   SPACE ::= " "
-     *   NEWLINE ::= "\n" | "\r" "\n"?
-     *   INT ::= [0-9]+
-     * </pre>
-     * 
-     * <br> If neither --file nor --size is given, generate a random board of size 10x10.
-     * 
-     * <br> Note that --file and --size may not be specified simultaneously.
-     * 
-     * @param args arguments as described
-     */
-    public static void main(String[] args) {
-        // Command-line argument parsing is provided. Do not change this method.
-        boolean debug = false;
-        int port = DEFAULT_PORT;
-        int sizeX = DEFAULT_SIZE;
-        int sizeY = DEFAULT_SIZE;
-        Optional<File> file = Optional.empty();
-
-        Queue<String> arguments = new LinkedList<String>(Arrays.asList(args));
-        try {
-            while ( ! arguments.isEmpty()) {
-                String flag = arguments.remove();
-                try {
-                    if (flag.equals("--debug")) {
-                        debug = true;
-                    } else if (flag.equals("--no-debug")) {
-                        debug = false;
-                    } else if (flag.equals("--port")) {
-                        port = Integer.parseInt(arguments.remove());
-                        if (port < 0 || port > MAXIMUM_PORT) {
-                            throw new IllegalArgumentException("port " + port + " out of range");
-                        }
-                    } else if (flag.equals("--size")) {
-                        String[] sizes = arguments.remove().split(",");
-                        sizeX = Integer.parseInt(sizes[0]);
-                        sizeY = Integer.parseInt(sizes[1]);
-                        file = Optional.empty();
-                    } else if (flag.equals("--file")) {
-                        sizeX = -1;
-                        sizeY = -1;
-                        file = Optional.of(new File(arguments.remove()));
-                        if ( ! file.get().isFile()) {
-                            throw new IllegalArgumentException("file not found: \"" + file.get() + "\"");
-                        }
-                    } else {
-                        throw new IllegalArgumentException("unknown option: \"" + flag + "\"");
-                    }
-                } catch (NoSuchElementException nsee) {
-                    throw new IllegalArgumentException("missing argument for " + flag);
-                } catch (NumberFormatException nfe) {
-                    throw new IllegalArgumentException("unable to parse number for " + flag);
-                }
-            }
-        } catch (IllegalArgumentException iae) {
-            System.err.println(iae.getMessage());
-            System.err.println("usage: MinesweeperServer [--debug | --no-debug] [--port PORT] [--size SIZE_X,SIZE_Y | --file FILE]");
-            return;
+        if (port == 0) port = DEFAULT_PORT;
+        if (sizeX == 0 || sizeY == 0) {
+            sizeX = DEFAULT_SIZE;
+            sizeY = DEFAULT_SIZE;
         }
-
-        try {
-            runMinesweeperServer(debug, file, sizeX, sizeY, port);
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
-        }
+        
+        new MinesweeperServer(port, debug, 
+                file.isPresent() ? new Board(file.get()) : new Board(sizeX, sizeY)).serve();
     }
 
 }
