@@ -17,6 +17,8 @@ import java.net.URL;
 
 import org.junit.Test;
 
+import main.Main;
+
 /**
  * Tests for single client use of MinesweeperServer.
  * 
@@ -46,7 +48,7 @@ public class MinesweeperServerTest {
                 "--file", boardPath
         };
         
-        Thread serverThread = new Thread(() -> MinesweeperServer.main(args));
+        Thread serverThread = new Thread(() -> Main.main(args));
         serverThread.start();
         return serverThread;
     }
