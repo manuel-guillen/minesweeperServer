@@ -44,6 +44,7 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
     private final JLabel fileLabel;
     private final JLabel rowsLabel, columnsLabel, rowNumLabel, columnNumLabel;
     private final JSlider rowSlider, columnSlider;
+    private final JButton runButton;
 
     /**
      * Create the Minesweeper Server GUI.
@@ -156,14 +157,17 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         browseButton.setBounds(220, 78, 97, 25);
         browseButton.addActionListener(this);
         browseButton.setVisible(false);
-        contentPane.add(browseButton);
+//        contentPane.add(browseButton);
         
         fileLabel = new JLabel("default.txt");
         fileLabel.setFont(RESULT_FONT);
         fileLabel.setBounds(328, 78, 114, 25);
         fileLabel.setVisible(false);
-        contentPane.add(fileLabel);
+//        contentPane.add(fileLabel);
         
+        runButton = new JButton("Start");
+        runButton.setBounds(360, 144, 97, 25);
+        contentPane.add(runButton);
         setVisible(true);
     }
 
@@ -179,6 +183,8 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
            
            browseButton.setVisible(e.getSource() == fileBoardButton);
            fileLabel.setVisible(e.getSource() == fileBoardButton);
+           
+           runButton.setLocation(360, e.getSource() == fileBoardButton ? 112 : 144);
        }
     }
 
