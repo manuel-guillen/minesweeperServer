@@ -20,6 +20,7 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.JSeparator;
 
 /**
  * Represents a graphic user interface for managing a
@@ -36,7 +37,6 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
     private static final int MAX_BOARD_SIZE = 30;
     
     private final JPanel contentPane;
-    
     private final JTextField portField;
     private final JCheckBox kickCheckBox;
     private final JRadioButton randomBoardButton, fileBoardButton;
@@ -44,10 +44,12 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
     private final JLabel fileLabel;
     private final JLabel rowsLabel, columnsLabel, rowNumLabel, columnNumLabel;
     private final JSlider rowSlider, columnSlider;
-    private final JButton runButton;
-    private JTextField playerCountField;
+    private final JTextField playerCountField;
     private final JLabel playersLabel;
-
+    
+    private final JPanel panel;
+    private final JButton runButton;
+    
     /**
      * Create the Minesweeper Server GUI.
      * @throws UnknownHostException 
@@ -167,11 +169,6 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         fileLabel.setVisible(false);
         contentPane.add(fileLabel);
         
-        runButton = new JButton("Start");
-        runButton.setBounds(360, 144, 97, 25);
-        runButton.addActionListener(this);
-        contentPane.add(runButton);
-        
         playersLabel = new JLabel("Players Connected:");
         playersLabel.setFont(LABEL_FONT);
         playersLabel.setBounds(12, 108, 126, 16);
@@ -183,6 +180,20 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         playerCountField.setBounds(135, 105, 64, 22);
         playerCountField.setVisible(false);
         contentPane.add(playerCountField);
+        
+        panel = new JPanel();
+        panel.setBounds(12, 140, 445, 108);
+        panel.setLayout(null);
+        contentPane.add(panel);
+        
+        JSeparator separator = new JSeparator();
+        separator.setBounds(0, 29, 445, 2);
+        panel.add(separator);
+        
+        runButton = new JButton("Start");
+        runButton.setBounds(348, 0, 97, 25);
+        runButton.addActionListener(this);
+        panel.add(runButton);
         
         setVisible(true);
     }
@@ -200,8 +211,9 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
            browseButton.setVisible(e.getSource() == fileBoardButton);
            fileLabel.setVisible(e.getSource() == fileBoardButton);
            
-           runButton.setLocation(360, e.getSource() == fileBoardButton ? 112 : 144);
-       }
+           panel.setLocation(12, e.getSource() == fileBoardButton ? 108 : 140);
+       } 
+       
        else if (e.getSource() == runButton) {
            runButton.setText("Running...");
            runButton.setEnabled(false);
@@ -219,6 +231,7 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
            playersLabel.setVisible(true);
            playerCountField.setVisible(true);
        }
+       
     }
 
     @Override
