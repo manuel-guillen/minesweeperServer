@@ -49,6 +49,8 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
     
     private final JPanel panel;
     private final JButton runButton;
+    private final JSeparator separator;
+    private final JLabel boardLayoutLabel;
     
     /**
      * Create the Minesweeper Server GUI.
@@ -56,7 +58,7 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
      */
     public MinesweeperServerFrame() throws UnknownHostException {
         setTitle("Minesweeper Server");
-        setBounds(100, 100, 475, 300);
+        setBounds(100, 100, 475, 210);
         setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
@@ -186,18 +188,20 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         panel.setLayout(null);
         contentPane.add(panel);
         
-        JSeparator separator = new JSeparator();
-        separator.setBounds(0, 29, 445, 2);
-        panel.add(separator);
-        
         runButton = new JButton("Start");
         runButton.setBounds(348, 0, 97, 25);
         runButton.addActionListener(this);
         panel.add(runButton);
         
-        JLabel boardLayoutLabel = new JLabel("Board Layout:");
+        separator = new JSeparator();
+        separator.setBounds(0, 29, 445, 2);
+        separator.setVisible(false);
+        panel.add(separator);
+        
+        boardLayoutLabel = new JLabel("Board Layout:");
         boardLayoutLabel.setFont(LABEL_FONT);
         boardLayoutLabel.setBounds(0, 37, 93, 16);
+        boardLayoutLabel.setVisible(false);
         panel.add(boardLayoutLabel);
         
         setVisible(true);
@@ -217,7 +221,9 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
            fileLabel.setVisible(e.getSource() == fileBoardButton);
            
            panel.setLocation(12, e.getSource() == fileBoardButton ? 108 : 140);
-       } 
+           
+           this.setSize(475, e.getSource() == fileBoardButton ? 175 : 210);
+       }
        
        else if (e.getSource() == runButton) {
            runButton.setText("Running...");
@@ -235,6 +241,11 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
            
            playersLabel.setVisible(true);
            playerCountField.setVisible(true);
+           
+           separator.setVisible(true);
+           boardLayoutLabel.setVisible(true);
+           
+           this.setSize(475, 250);
        }
     }
 
