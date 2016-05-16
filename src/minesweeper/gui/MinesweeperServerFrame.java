@@ -195,6 +195,11 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         runButton.addActionListener(this);
         panel.add(runButton);
         
+        JLabel boardLayoutLabel = new JLabel("Board Layout:");
+        boardLayoutLabel.setFont(LABEL_FONT);
+        boardLayoutLabel.setBounds(0, 37, 93, 16);
+        panel.add(boardLayoutLabel);
+        
         setVisible(true);
     }
 
@@ -231,7 +236,6 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
            playersLabel.setVisible(true);
            playerCountField.setVisible(true);
        }
-       
     }
 
     @Override
