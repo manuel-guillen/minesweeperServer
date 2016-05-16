@@ -45,6 +45,8 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
     private final JLabel rowsLabel, columnsLabel, rowNumLabel, columnNumLabel;
     private final JSlider rowSlider, columnSlider;
     private final JButton runButton;
+    private JTextField playerCountField;
+    private final JLabel playersLabel;
 
     /**
      * Create the Minesweeper Server GUI.
@@ -84,7 +86,7 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         JTextField addressField = new JTextField();
         addressField.setEditable(false);
         addressField.setText(Inet4Address.getLocalHost().getHostAddress().toString());
-        addressField.setBounds(86, 48, 123, 22);
+        addressField.setBounds(86, 48, 113, 22);
         contentPane.add(addressField);
         
         portField = new JTextField();
@@ -157,17 +159,31 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         browseButton.setBounds(220, 78, 97, 25);
         browseButton.addActionListener(this);
         browseButton.setVisible(false);
-//        contentPane.add(browseButton);
+        contentPane.add(browseButton);
         
         fileLabel = new JLabel("default.txt");
         fileLabel.setFont(RESULT_FONT);
         fileLabel.setBounds(328, 78, 114, 25);
         fileLabel.setVisible(false);
-//        contentPane.add(fileLabel);
+        contentPane.add(fileLabel);
         
         runButton = new JButton("Start");
         runButton.setBounds(360, 144, 97, 25);
+        runButton.addActionListener(this);
         contentPane.add(runButton);
+        
+        playersLabel = new JLabel("Players Connected:");
+        playersLabel.setFont(LABEL_FONT);
+        playersLabel.setBounds(12, 108, 126, 16);
+        playersLabel.setVisible(false);
+        contentPane.add(playersLabel);
+        
+        playerCountField = new JTextField("0");
+        playerCountField.setEditable(false);
+        playerCountField.setBounds(135, 105, 64, 22);
+        playerCountField.setVisible(false);
+        contentPane.add(playerCountField);
+        
         setVisible(true);
     }
 
@@ -185,6 +201,23 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
            fileLabel.setVisible(e.getSource() == fileBoardButton);
            
            runButton.setLocation(360, e.getSource() == fileBoardButton ? 112 : 144);
+       }
+       else if (e.getSource() == runButton) {
+           runButton.setText("Running...");
+           runButton.setEnabled(false);
+           runButton.setFocusable(false);
+           
+           portField.setEditable(false);
+           
+           kickCheckBox.setEnabled(false);
+           randomBoardButton.setEnabled(false);
+           fileBoardButton.setEnabled(false);
+           rowSlider.setEnabled(false);
+           columnSlider.setEnabled(false);
+           browseButton.setEnabled(false);
+           
+           playersLabel.setVisible(true);
+           playerCountField.setVisible(true);
        }
     }
 
