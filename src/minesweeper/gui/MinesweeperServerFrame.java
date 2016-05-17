@@ -1,6 +1,7 @@
 package minesweeper.gui;
 
 import java.awt.Font;
+import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.Inet4Address;
@@ -13,14 +14,16 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JSeparator;
 import javax.swing.JSlider;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.JSeparator;
+import javax.swing.table.DefaultTableModel;
 
 /**
  * Represents a graphic user interface for managing a
@@ -58,7 +61,7 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
      */
     public MinesweeperServerFrame() throws UnknownHostException {
         setTitle("Minesweeper Server");
-        setBounds(100, 100, 475, 210);
+        setBounds(100, 100, 475, 210); 
         setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
@@ -184,7 +187,7 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         contentPane.add(playerCountField);
         
         panel = new JPanel();
-        panel.setBounds(12, 140, 445, 108);
+        panel.setBounds(12, 140, 496, 219);
         panel.setLayout(null);
         contentPane.add(panel);
         
@@ -210,45 +213,26 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
     @Override
     public void actionPerformed(ActionEvent e) {
        if (e.getSource() == randomBoardButton || e.getSource() == fileBoardButton) {
-           rowsLabel.setVisible(e.getSource() == randomBoardButton);
-           rowSlider.setVisible(e.getSource() == randomBoardButton);
-           rowNumLabel.setVisible(e.getSource() == randomBoardButton);
-           columnsLabel.setVisible(e.getSource() == randomBoardButton);
-           columnSlider.setVisible(e.getSource() == randomBoardButton);
-           columnNumLabel.setVisible(e.getSource() == randomBoardButton);
+           setVisibleSizeOptionComponents(e.getSource() == randomBoardButton);
+           setVisibleFileOptionComponents(e.getSource() == fileBoardButton);
            
-           browseButton.setVisible(e.getSource() == fileBoardButton);
-           fileLabel.setVisible(e.getSource() == fileBoardButton);
-           
-           panel.setLocation(12, e.getSource() == fileBoardButton ? 108 : 140);
-           
-           this.setSize(475, e.getSource() == fileBoardButton ? 175 : 210);
+           panel.setLocation(panel.getX(), e.getSource() == fileBoardButton ? 108 : 140);
+           this.setSize(this.getWidth(), e.getSource() == fileBoardButton ? 175 : 210);
+       }
+       
+       else if (e.getSource() == browseButton) {
+           // File selection process.
        }
        
        else if (e.getSource() == runButton) {
            runButton.setText("Running...");
-           runButton.setEnabled(false);
-           runButton.setFocusable(false);
-           
-           portField.setEditable(false);
-           
-           kickCheckBox.setEnabled(false);
-           randomBoardButton.setEnabled(false);
-           fileBoardButton.setEnabled(false);
-           rowSlider.setEnabled(false);
-           columnSlider.setEnabled(false);
-           browseButton.setEnabled(false);
-           
-           playersLabel.setVisible(true);
-           playerCountField.setVisible(true);
-           
-           separator.setVisible(true);
-           boardLayoutLabel.setVisible(true);
+           disableInputComponents();
+           setVisibleStartedComponents(true);
            
            this.setSize(475, 250);
        }
     }
-
+    
     @Override
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() == rowSlider)
@@ -256,6 +240,42 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         else if (e.getSource() == columnSlider)
             columnNumLabel.setText(columnSlider.getValue() + "");
     }
+
+    private void setVisibleSizeOptionComponents(boolean visible) {
+        rowsLabel.setVisible(visible);
+        rowSlider.setVisible(visible);
+        rowNumLabel.setVisible(visible);
+        columnsLabel.setVisible(visible);
+        columnSlider.setVisible(visible);
+        columnNumLabel.setVisible(visible);
+    }
+    
+    private void setVisibleFileOptionComponents(boolean visible) {
+        browseButton.setVisible(visible);
+        fileLabel.setVisible(visible);
+    }
+    
+    private void setVisibleStartedComponents(boolean visible) {
+        playersLabel.setVisible(visible);
+        playerCountField.setVisible(visible);
+        separator.setVisible(visible);
+        boardLayoutLabel.setVisible(visible);
+    }
+    
+    private void disableInputComponents() {
+        runButton.setEnabled(false);
+        runButton.setFocusable(false);
+        
+        portField.setEditable(false);
+        kickCheckBox.setEnabled(false);
+        randomBoardButton.setEnabled(false);
+        fileBoardButton.setEnabled(false);
+        rowSlider.setEnabled(false);
+        columnSlider.setEnabled(false);
+        browseButton.setEnabled(false);
+    }
+    
+    // =================================================================================
     
     public static void main(String[] args) throws UnknownHostException {
         try {
