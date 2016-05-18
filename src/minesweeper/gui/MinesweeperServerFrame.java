@@ -4,12 +4,15 @@ import java.awt.Font;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
+import java.util.Optional;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -50,10 +53,14 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
     private final JTextField playerCountField;
     private final JLabel playersLabel;
     
+    private final JFileChooser fileChooser = new JFileChooser();
+    private Optional<File> file = Optional.empty();
+    
     private final JPanel panel;
     private final JButton runButton;
     private final JSeparator separator;
     private final JLabel boardLayoutLabel;
+    private final JTable table;
     
     /**
      * Create the Minesweeper Server GUI.
@@ -168,7 +175,7 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         browseButton.setVisible(false);
         contentPane.add(browseButton);
         
-        fileLabel = new JLabel("default.txt");
+        fileLabel = new JLabel();
         fileLabel.setFont(RESULT_FONT);
         fileLabel.setBounds(328, 78, 114, 25);
         fileLabel.setVisible(false);
@@ -207,6 +214,11 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         boardLayoutLabel.setVisible(false);
         panel.add(boardLayoutLabel);
         
+        table = new JTable();
+        table.setEnabled(false);
+        table.setRowSelectionAllowed(false);
+        table.setBackground(SystemColor.control);
+        
         setVisible(true);
     }
 
@@ -221,7 +233,12 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
        }
        
        else if (e.getSource() == browseButton) {
-           // File selection process.
+           int status = fileChooser.showOpenDialog(this);
+           if (status == JFileChooser.APPROVE_OPTION) {
+               File file = fileChooser.getSelectedFile();
+               fileLabel.setText(file.getName());
+               this.file = Optional.of(file);
+           }
        }
        
        else if (e.getSource() == runButton) {
