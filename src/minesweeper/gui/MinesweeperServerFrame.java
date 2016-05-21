@@ -5,7 +5,6 @@ import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.Optional;
@@ -27,7 +26,6 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.table.DefaultTableModel;
 
 import minesweeper.server.MinesweeperServer;
 
@@ -67,11 +65,19 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
     
     private MinesweeperServer server;
     
+    public static void startMinesweeperServerFrameUI() {
+        try {
+            new MinesweeperServerFrame();
+        } catch (UnknownHostException e) {
+            System.err.println("Could not determine host IP address.");
+        }
+    }
+    
     /**
      * Create the Minesweeper Server GUI.
      * @throws UnknownHostException 
      */
-    public MinesweeperServerFrame() throws UnknownHostException {
+    private MinesweeperServerFrame() throws UnknownHostException {
         setTitle("Minesweeper Server");
         setBounds(100, 100, 475, 210); 
         setResizable(false);
@@ -305,15 +311,4 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         browseButton.setEnabled(false);
     }
     
-    // =================================================================================
-    
-    public static void main(String[] args) throws UnknownHostException {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e){
-            // Use default look and feel.
-        }
-        
-        new MinesweeperServerFrame();
-    }
 }
