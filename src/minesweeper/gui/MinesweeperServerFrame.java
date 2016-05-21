@@ -22,7 +22,6 @@ import javax.swing.JSlider;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -35,6 +34,16 @@ import minesweeper.server.MinesweeperServer;
  */
 @SuppressWarnings("serial")
 public class MinesweeperServerFrame extends JFrame implements ActionListener, ChangeListener {
+    
+    public static void startMinesweeperServerFrameUI() {
+        try {
+            new MinesweeperServerFrame();
+        } catch (UnknownHostException e) {
+            System.err.println("Could not determine host IP address.");
+        }
+    }
+    
+    // =====================================================================================
     
     private static final Font HEADER_FONT = new Font("Tahoma", Font.BOLD, 18);
     private static final Font LABEL_FONT = new Font("Tahoma", Font.PLAIN, 14);
@@ -64,14 +73,6 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
     private final JTable table;
     
     private MinesweeperServer server;
-    
-    public static void startMinesweeperServerFrameUI() {
-        try {
-            new MinesweeperServerFrame();
-        } catch (UnknownHostException e) {
-            System.err.println("Could not determine host IP address.");
-        }
-    }
     
     /**
      * Create the Minesweeper Server GUI.
