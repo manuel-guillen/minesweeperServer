@@ -5,6 +5,7 @@ import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.Optional;
@@ -27,6 +28,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
+
+import minesweeper.server.MinesweeperServer;
 
 /**
  * Represents a graphic user interface for managing a
@@ -61,6 +64,8 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
     private final JSeparator separator;
     private final JLabel boardLayoutLabel;
     private final JTable table;
+    
+    private MinesweeperServer server;
     
     /**
      * Create the Minesweeper Server GUI.
@@ -104,7 +109,7 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         contentPane.add(addressField);
         
         portField = new JTextField();
-        portField.setText("4444");
+        portField.setText(MinesweeperServer.DEFAULT_PORT + "");
         portField.setBounds(256, 48, 54, 22);
         contentPane.add(portField);
         
@@ -242,11 +247,19 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
        }
        
        else if (e.getSource() == runButton) {
-           runButton.setText("Running...");
-           disableInputComponents();
-           setVisibleStartedComponents(true);
+           try {
+               if (randomBoardButton.isSelected())
+                   server = MinesweeperServer.runMinesweeperServer(kickCheckBox.isSelected(), Optional.empty(), columnSlider.getValue(), rowSlider.getValue(), Integer.parseInt(portField.getText()));
+               else
+                   server = MinesweeperServer.runMinesweeperServer(kickCheckBox.isSelected(), file, 0, 0, Integer.parseInt(portField.getText()));
+               
+               runButton.setText("Running...");
+               disableInputComponents();
+               setVisibleStartedComponents(true);
+           } catch (Exception e1) {
+               server = null;
+           }
            
-           this.setSize(475, 250);
        }
     }
     

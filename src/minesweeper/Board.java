@@ -108,6 +108,9 @@ public class Board {
      * @param height a positive integer denoting the height of the Minesweeper board
      */
     public Board(int width, int height) {
+        if (width == 0 || height == 0)
+            throw new IllegalArgumentException("Board must have positive dimensions.");
+        
         this.width = width;
         this.height = height;
         
