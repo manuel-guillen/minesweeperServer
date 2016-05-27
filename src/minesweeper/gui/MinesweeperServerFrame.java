@@ -224,9 +224,9 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         contentPane.add(playerCountField);
         
         panel = new JPanel() {
-            public void paint(Graphics arg0) {
-                super.paint(arg0);
-                drawBoardLayout((Graphics2D) arg0);
+            public void paint(Graphics g) {
+                super.paint(g);
+                drawBoardLayout((Graphics2D) g);
             }
         };
         panel.setBounds(12, 140, 452, 262);
@@ -304,10 +304,9 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         g.translate(0, 60);
         for (int y = 0; y < server.getBoardHeight(); y++)
             for (int x = 0; x < server.getBoardWidth(); x++) {
-                if (server.boardHasMine(x, y)) g.drawImage(MINE,MINE.getWidth()*x,MINE.getHeight()*y,null);
-                else                           g.drawImage(EMPTY,EMPTY.getWidth()*x,EMPTY.getHeight()*y,null);
+                BufferedImage image = (server.boardHasMine(x,y)) ? MINE : EMPTY;
+                g.drawImage(image,image.getWidth()*x,image.getHeight()*y,null);
             }
-                
     }
     
     @Override
