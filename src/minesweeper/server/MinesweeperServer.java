@@ -14,7 +14,6 @@ import minesweeper.Board;
  */
 public class MinesweeperServer {
     
-    /** Maximum allowed port for server connection. */
     public static final int DEFAULT_PORT = 4444;
     private static final int MAXIMUM_PORT = 65535;
     
@@ -79,8 +78,6 @@ public class MinesweeperServer {
         this.debug = debug;
         this.board = board;
     }
-
-    private boolean alive = true;
     
     /**
      * Run the server, listening for client connections and handling them.
@@ -88,7 +85,7 @@ public class MinesweeperServer {
      */
     private void serve() {
         try {
-            while (alive) {
+            while (true) {
                 Socket socket = serverSocket.accept();
                 players.incrementAndGet();
                 new Thread(new MinesweeperClientHandler(socket, debug, board, players)).start();
@@ -98,29 +95,38 @@ public class MinesweeperServer {
         }
     }
     
+    /**
+     * Returns the number of players connected to the server
+     * @return the number of players connected to this server
+     */
     public int playerCount() {
         return players.get();
     }
     
+    /**
+     * Returns the width of the Minesweeper board of this server
+     * @return the width of the Minesweeper board (the number of columns)
+     */
     public int getBoardWidth() {
         return board.getWidth();
     }
     
+    /**
+     * Returns the height of the Minesweeper board of this server
+     * @return the height of the Minesweeper board (the number of rows)
+     */
     public int getBoardHeight() {
         return board.getHeight();
     }
     
+    /**
+     * Returns true if the Minesweeper board of this server has a mine at cell (x,y). Returns false otherwise.
+     * @param x a nonnegative integer less than the width of the board
+     * @param y a nonnegative integer less than the height of the board
+     * @return true if the Minesweeper board of this server has a mine at cell (x,y); false otherwise.
+     */
     public boolean boardHasMine(int x, int y) {
         return board.containsMine(x, y);
-    }
-    
-    public void killServer() {
-        alive = false;
-        try {
-            serverSocket.close();
-        } catch (IOException e) {
-            return;
-        }
     }
     
     /**

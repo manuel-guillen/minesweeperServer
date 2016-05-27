@@ -38,6 +38,9 @@ import minesweeper.server.MinesweeperServer;
 @SuppressWarnings("serial")
 public class MinesweeperServerFrame extends JFrame implements ActionListener, ChangeListener {
     
+    /**
+     * Creates a MinesweeperServerFrame.
+     */
     public static void startMinesweeperServerFrameUI() {
         try {
             new MinesweeperServerFrame();
@@ -46,6 +49,11 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         }
     }
     
+    /**
+     * Returns image object for the image file called filename (in media folder).
+     * @param filename name of image file (in media folder)
+     * @return image object corresponding to the read image file.
+     */
     private static BufferedImage getPic(String filename) {
         try {
             return ImageIO.read(new File("media/" + filename));
@@ -87,8 +95,8 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
     private MinesweeperServer server;
     
     /**
-     * Create the Minesweeper Server GUI.
-     * @throws UnknownHostException 
+     * Creates and initializes the Minesweeper Server GUI.
+     * @throws UnknownHostException if unable to determine host IP address.
      */
     private MinesweeperServerFrame() throws UnknownHostException {
         setTitle("Minesweeper Server");
@@ -297,7 +305,11 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
            }
        }
     }
-        
+    
+    /**
+     * Draws the board layout, the distribution of mines on the running Minesweeper server's board.
+     * @param g The graphics context to be used for drawing
+     */
     private void drawBoardLayout(Graphics2D g) {
         if (server == null) return;
         
@@ -316,7 +328,11 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         else if (e.getSource() == columnSlider)
             columnNumLabel.setText(columnSlider.getValue() + "");
     }
-
+    
+    /**
+     * Sets the visibility of the board sizing components (rows & column labels and sliders)
+     * @param visible true to make the components visible; false to make invisible.
+     */
     private void setVisibleSizeOptionComponents(boolean visible) {
         rowsLabel.setVisible(visible);
         rowSlider.setVisible(visible);
@@ -326,11 +342,19 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         columnNumLabel.setVisible(visible);
     }
     
+    /**
+     * Sets the visibility of the file selection components (file label & file browse button)
+     * @param visible true to make the components visibile; false the make invisible.
+     */
     private void setVisibleFileOptionComponents(boolean visible) {
         browseButton.setVisible(visible);
         fileLabel.setVisible(visible);
     }
     
+    /**
+     * Sets the visibility of the components to be visible after the server has initiated.
+     * @param visible true to make the components visibile; false the make invisible.
+     */
     private void setVisibleStartedComponents(boolean visible) {
         playersLabel.setVisible(visible);
         playerCountField.setVisible(visible);
@@ -338,6 +362,9 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         boardLayoutLabel.setVisible(visible);
     }
     
+    /**
+     * Disables the input components used to initiate the Minesweeper server.
+     */
     private void disableInputComponents() {
         runButton.setEnabled(false);
         runButton.setFocusable(false);

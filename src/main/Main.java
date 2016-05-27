@@ -1,12 +1,11 @@
 package main;
 
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
 import minesweeper.gui.MinesweeperServerFrame;
 
 /**
- * Entry-point for initiation of a MinesweeperServer. Main method initiates a Minesweeper server
+ * Entry-point for initiation of a MinesweeperServer. Main method initiates a Minesweeper server GUI
  * 
  * <br> PORT is an integer in the range 0 to 65535 inclusive, specifying the port the server
  *      should be listening on for incoming connections, default set to 4444 on UI.
@@ -41,6 +40,6 @@ public class Main {
         }
         
         MinesweeperServerFrame.startMinesweeperServerFrameUI();
-    }
-    
+    } 
+
 }
