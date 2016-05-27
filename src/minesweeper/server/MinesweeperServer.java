@@ -102,6 +102,18 @@ public class MinesweeperServer {
         return players.get();
     }
     
+    public int getBoardWidth() {
+        return board.getWidth();
+    }
+    
+    public int getBoardHeight() {
+        return board.getHeight();
+    }
+    
+    public boolean boardHasMine(int x, int y) {
+        return board.containsMine(x, y);
+    }
+    
     public void killServer() {
         alive = false;
         try {
