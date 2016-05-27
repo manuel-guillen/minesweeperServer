@@ -46,11 +46,11 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         }
     }
     
-    private static BufferedImage getMinePic() {
+    private static BufferedImage getPic(String filename) {
         try {
-            return ImageIO.read(new File("media/mine.png"));
+            return ImageIO.read(new File("media/" + filename));
         } catch (IOException e) {
-            throw new RuntimeException("Missing mine.png file.");
+            throw new RuntimeException("Missing " + filename + " file.");
         }
     }
     
@@ -63,7 +63,8 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
     private static final int DEFAULT_BOARD_SIZE = 10;
     private static final int MAX_BOARD_SIZE = 30;
     
-    private static final BufferedImage MINE = getMinePic();
+    private static final BufferedImage EMPTY = getPic("empty.png");
+    private static final BufferedImage MINE = getPic("mine.png");
     
     private final JTextField portField;
     private final JCheckBox kickCheckBox;
@@ -210,7 +211,13 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         playersLabel.setVisible(false);
         contentPane.add(playersLabel);
         
-        playerCountField = new JTextField("0");
+        playerCountField = new JTextField("0") {
+            @Override
+            public void paint(Graphics g) {
+                super.paint(g);
+                if (server != null) playerCountField.setText(server.playerCount() + "");
+            }
+        };
         playerCountField.setEditable(false);
         playerCountField.setBounds(135, 105, 64, 22);
         playerCountField.setVisible(false);
@@ -295,11 +302,12 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         if (server == null) return;
         
         g.translate(0, 60);
-        g.drawRect(0, 0, MINE.getWidth()*server.getBoardWidth(), MINE.getHeight()*server.getBoardHeight());
-        
         for (int y = 0; y < server.getBoardHeight(); y++)
-            for (int x = 0; x < server.getBoardWidth(); x++)
+            for (int x = 0; x < server.getBoardWidth(); x++) {
                 if (server.boardHasMine(x, y)) g.drawImage(MINE,MINE.getWidth()*x,MINE.getHeight()*y,null);
+                else                           g.drawImage(EMPTY,EMPTY.getWidth()*x,EMPTY.getHeight()*y,null);
+            }
+                
     }
     
     @Override
@@ -343,5 +351,4 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         columnSlider.setEnabled(false);
         browseButton.setEnabled(false);
     }
-    
 }
