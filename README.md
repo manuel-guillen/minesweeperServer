@@ -1,2 +1,2 @@
-# minesweeperServer-v1
+# minesweeperServer
 Multiplayer Minesweeper, managed using a Minesweeper server.
