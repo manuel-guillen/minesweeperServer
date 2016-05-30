@@ -56,7 +56,7 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
      */
     private static BufferedImage getPic(String filename) {
         try {
-            return ImageIO.read(new File("media/" + filename));
+            return ImageIO.read(MinesweeperServerFrame.class.getResource("/resources/" + filename));
         } catch (IOException e) {
             throw new RuntimeException("Missing " + filename + " file.");
         }
@@ -282,9 +282,9 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
        else if (e.getSource() == runButton) {
            try {
                if (randomBoardButton.isSelected())
-                   server = MinesweeperServer.runMinesweeperServer(kickCheckBox.isSelected(), Optional.empty(), columnSlider.getValue(), rowSlider.getValue(), Integer.parseInt(portField.getText()));
+                   server = MinesweeperServer.runMinesweeperServer(!kickCheckBox.isSelected(), Optional.empty(), columnSlider.getValue(), rowSlider.getValue(), Integer.parseInt(portField.getText()));
                else
-                   server = MinesweeperServer.runMinesweeperServer(kickCheckBox.isSelected(), file, 0, 0, Integer.parseInt(portField.getText()));
+                   server = MinesweeperServer.runMinesweeperServer(!kickCheckBox.isSelected(), file, 0, 0, Integer.parseInt(portField.getText()));
                
                runButton.setText("Running...");
                disableInputComponents();
