@@ -3,6 +3,7 @@ package minesweeper.gui;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -49,6 +50,25 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         }
     }
     
+    // =====================================================================================
+    
+    private static final int RESOLUTION_WIDTH = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getWidth();
+    private static final int RESOLUTION_HEIGHT = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getHeight();
+    private static final int REFERENCE_RESOLUTION_WIDTH = 1920;
+    private static final int REFERENCE_RESOLUTION_HEIGHT = 1080;
+    
+    private static int resX (int width) {
+        return width * RESOLUTION_WIDTH / REFERENCE_RESOLUTION_WIDTH;
+    }
+    
+    private static int resY (int height) {
+        return height * RESOLUTION_HEIGHT / REFERENCE_RESOLUTION_HEIGHT;
+    }
+    
+    private static int resSize (int size) {
+    	return (int) Math.min(resX(size), resY(size));
+    }
+    
     /**
      * Returns image object for the image file called filename (in media folder).
      * @param filename name of image file (in media folder)
@@ -64,9 +84,9 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
     
     // =====================================================================================
     
-    private static final Font HEADER_FONT = new Font("Tahoma", Font.BOLD, 18);
-    private static final Font LABEL_FONT = new Font("Tahoma", Font.PLAIN, 14);
-    private static final Font RESULT_FONT = new Font("Tahoma", Font.PLAIN, 13);
+    private static final Font HEADER_FONT = new Font("Tahoma", Font.BOLD, resSize(18));
+    private static final Font LABEL_FONT = new Font("Tahoma", Font.PLAIN, resSize(14));
+    private static final Font RESULT_FONT = new Font("Tahoma", Font.PLAIN, resSize(13));
     
     private static final int DEFAULT_BOARD_SIZE = 10;
     private static final int MAX_BOARD_SIZE = 30;
@@ -100,7 +120,7 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
      */
     private MinesweeperServerFrame() throws UnknownHostException {
         setTitle("Minesweeper Server");
-        setBounds(100, 100, 475, 210); 
+        setBounds(resX(100), resY(100), resX(475), resY(210)); 
         setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
@@ -110,34 +130,34 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         setContentPane(contentPane);
         
         JLabel headerLabel = new JLabel("Minesweeper Server Information");
-        headerLabel.setBounds(12, 13, 305, 22);
+        headerLabel.setBounds(resX(12), resY(13), resX(305), resY(22));
         headerLabel.setFont(HEADER_FONT);
         contentPane.add(headerLabel);
         
         JLabel addressLabel = new JLabel("IP Address:");
         addressLabel.setFont(LABEL_FONT);
-        addressLabel.setBounds(12, 50, 74, 16);
+        addressLabel.setBounds(resX(12), resY(50), resX(74), resY(16));
         contentPane.add(addressLabel);
         
         JLabel portLabel = new JLabel("Port:");
         portLabel.setFont(LABEL_FONT);
-        portLabel.setBounds(221, 50, 36, 16);
+        portLabel.setBounds(resX(221), resY(50), resX(36), resY(16));
         contentPane.add(portLabel);
         
         JLabel boardLabel = new JLabel("Board:");
         boardLabel.setFont(LABEL_FONT);
-        boardLabel.setBounds(12, 81, 47, 16);
+        boardLabel.setBounds(resX(12), resY(81), resX(47), resY(16));
         contentPane.add(boardLabel);
         
         JTextField addressField = new JTextField();
         addressField.setEditable(false);
         addressField.setText(Inet4Address.getLocalHost().getHostAddress().toString());
-        addressField.setBounds(86, 48, 113, 22);
+        addressField.setBounds(resX(86), resY(48), resX(113), resY(22));
         contentPane.add(addressField);
         
         portField = new JTextField();
         portField.setText(MinesweeperServer.DEFAULT_PORT + "");
-        portField.setBounds(256, 48, 54, 22);
+        portField.setBounds(resX(256), resY(48), resX(54), resY(22));
         contentPane.add(portField);
         
         kickCheckBox = new JCheckBox("Kick Upon Loss:");
@@ -145,36 +165,36 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         kickCheckBox.setSelected(true);
         kickCheckBox.setFont(LABEL_FONT);
         kickCheckBox.setHorizontalTextPosition(SwingConstants.LEADING);
-        kickCheckBox.setBounds(338, 46, 126, 25);
+        kickCheckBox.setBounds(resX(338), resY(46), resX(126), resY(25));
         contentPane.add(kickCheckBox);
         
         ButtonGroup buttonGroup = new ButtonGroup();
         
         randomBoardButton = new JRadioButton("Random");
         randomBoardButton.setSelected(true);
-        randomBoardButton.setBounds(67, 78, 81, 25);
+        randomBoardButton.setBounds(resX(67), resY(78), resX(81), resY(25));
         randomBoardButton.addActionListener(this);
         buttonGroup.add(randomBoardButton);
         contentPane.add(randomBoardButton);
         
         fileBoardButton = new JRadioButton("File");
-        fileBoardButton.setBounds(155, 78, 54, 25);
+        fileBoardButton.setBounds(resX(155), resY(78), resX(54), resY(25));
         fileBoardButton.addActionListener(this);
         buttonGroup.add(fileBoardButton);
         contentPane.add(fileBoardButton);
         
         rowsLabel = new JLabel("Rows:");
         rowsLabel.setFont(LABEL_FONT);
-        rowsLabel.setBounds(221, 81, 47, 16);
+        rowsLabel.setBounds(resX(221), resY(81), resX(47), resY(16));
         contentPane.add(rowsLabel);
         
         columnsLabel = new JLabel("Columns:");
         columnsLabel.setFont(LABEL_FONT);
-        columnsLabel.setBounds(221, 107, 64, 16);
+        columnsLabel.setBounds(resX(221), resY(107), resX(64), resY(16));
         contentPane.add(columnsLabel);
         
         rowSlider = new JSlider(1,MAX_BOARD_SIZE,DEFAULT_BOARD_SIZE);
-        rowSlider.setBounds(284, 78, 158, 26);
+        rowSlider.setBounds(resX(284), resY(78), resX(158), resY(26));
         rowSlider.setFocusable(false);
         rowSlider.setMajorTickSpacing(10);
         rowSlider.setMinorTickSpacing(2);
@@ -183,7 +203,7 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         contentPane.add(rowSlider);
         
         columnSlider = new JSlider(1,MAX_BOARD_SIZE,DEFAULT_BOARD_SIZE);
-        columnSlider.setBounds(284, 105, 158, 26);
+        columnSlider.setBounds(resX(284), resY(105), resX(158), resY(26));
         columnSlider.setFocusable(false);
         columnSlider.setMajorTickSpacing(10);
         columnSlider.setMinorTickSpacing(2);
@@ -193,29 +213,29 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
         
         rowNumLabel = new JLabel(DEFAULT_BOARD_SIZE + "");
         rowNumLabel.setFont(RESULT_FONT);
-        rowNumLabel.setBounds(445, 83, 22, 16);
+        rowNumLabel.setBounds(resX(445), resY(83), resX(22), resY(16));
         contentPane.add(rowNumLabel);
         
         columnNumLabel = new JLabel(DEFAULT_BOARD_SIZE + "");
         columnNumLabel.setFont(RESULT_FONT);
-        columnNumLabel.setBounds(445, 110, 22, 16);
+        columnNumLabel.setBounds(resX(445), resY(110), resX(22), resY(16));
         contentPane.add(columnNumLabel);
         
         browseButton = new JButton("Browse...");
-        browseButton.setBounds(220, 78, 97, 25);
+        browseButton.setBounds(resX(220), resY(78), resX(97), resY(25));
         browseButton.addActionListener(this);
         browseButton.setVisible(false);
         contentPane.add(browseButton);
         
         fileLabel = new JLabel();
         fileLabel.setFont(RESULT_FONT);
-        fileLabel.setBounds(328, 78, 114, 25);
+        fileLabel.setBounds(resX(328), resY(78), resX(114), resY(25));
         fileLabel.setVisible(false);
         contentPane.add(fileLabel);
         
         playersLabel = new JLabel("Players Connected:");
         playersLabel.setFont(LABEL_FONT);
-        playersLabel.setBounds(12, 108, 126, 16);
+        playersLabel.setBounds(resX(12), resY(108), resX(126), resY(16));
         playersLabel.setVisible(false);
         contentPane.add(playersLabel);
         
@@ -227,7 +247,7 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
             }
         };
         playerCountField.setEditable(false);
-        playerCountField.setBounds(135, 105, 64, 22);
+        playerCountField.setBounds(resX(135), resY(105), resX(64), resY(22));
         playerCountField.setVisible(false);
         contentPane.add(playerCountField);
         
@@ -237,23 +257,23 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
                 drawBoardLayout((Graphics2D) g);
             }
         };
-        panel.setBounds(12, 140, 452, 262);
+        panel.setBounds(resX(12), resY(140), resX(452), resY(262));
         panel.setLayout(null);
         contentPane.add(panel);
         
         runButton = new JButton("Start");
-        runButton.setBounds(348, 0, 97, 25);
+        runButton.setBounds(resX(348), resY(0), resX(97), resY(25));
         runButton.addActionListener(this);
         panel.add(runButton);
         
         separator = new JSeparator();
-        separator.setBounds(0, 29, 445, 2);
+        separator.setBounds(resX(0), resY(29), resX(445), resY(2));
         separator.setVisible(false);
         panel.add(separator);
         
         boardLayoutLabel = new JLabel("Board Layout:");
         boardLayoutLabel.setFont(LABEL_FONT);
-        boardLayoutLabel.setBounds(0, 37, 93, 16);
+        boardLayoutLabel.setBounds(resX(0), resY(37), resX(93), resY(16));
         boardLayoutLabel.setVisible(false);
         panel.add(boardLayoutLabel);
         
@@ -266,8 +286,8 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
            setVisibleSizeOptionComponents(e.getSource() == randomBoardButton);
            setVisibleFileOptionComponents(e.getSource() == fileBoardButton);
            
-           panel.setLocation(panel.getX(), e.getSource() == fileBoardButton ? 108 : 140);
-           this.setSize(this.getWidth(), e.getSource() == fileBoardButton ? 175 : 210);
+           panel.setLocation(panel.getX(), e.getSource() == fileBoardButton ? resY(108) : resY(140));
+           this.setSize(this.getWidth(), e.getSource() == fileBoardButton ? resY(175) : resY(210));
        }
        
        else if (e.getSource() == browseButton) {
@@ -293,11 +313,11 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
                int rows = server.getBoardHeight();
                int columns = server.getBoardWidth();
                
-               int width = panel.getWidth() + 21*Math.max(columns-22,0);
-               int height = panel.getHeight() + 20*Math.max(rows-10,0);
+               int width = panel.getWidth() + resX(21)*Math.max(columns-22,0);
+               int height = panel.getHeight() + resY(20)*Math.max(rows-10,0);
               
                panel.setSize(width, height);
-               this.setSize(panel.getWidth()+20, panel.getHeight() + (fileBoardButton.isSelected() ? 155 : 190));
+               this.setSize(panel.getWidth()+resX(20), panel.getHeight() + resY(fileBoardButton.isSelected() ? 155 : 190));
                // see drawBoardLayout()
                
            } catch (Exception e1) {
@@ -313,11 +333,11 @@ public class MinesweeperServerFrame extends JFrame implements ActionListener, Ch
     private void drawBoardLayout(Graphics2D g) {
         if (server == null) return;
         
-        g.translate(0, 60);
+        g.translate(resX(0), resY(60));
         for (int y = 0; y < server.getBoardHeight(); y++)
             for (int x = 0; x < server.getBoardWidth(); x++) {
                 BufferedImage image = (server.boardHasMine(x,y)) ? MINE : EMPTY;
-                g.drawImage(image,image.getWidth()*x,image.getHeight()*y,null);
+                g.drawImage(image,resY(image.getWidth())*x,resY(image.getHeight())*y, resY(image.getWidth()), resY(image.getHeight()), null);
             }
     }
     
